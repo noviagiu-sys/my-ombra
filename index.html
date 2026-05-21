@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Ombra"/>
+<title>Ombra – Distracted Walking Guard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:    #03040A;
+  --bg2:   #08090F;
+  --glass: rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.10);
+  --green: #00FF94;
+  --warn:  #FFB300;
+  --red:   #FF1744;
+  --cyan:  #00E5FF;
+  --text:  #E8EAED;
+  --muted: #606470;
+  --dim:   #181B24;
+  --font:  'Orbitron', monospace;
+  --body:  'DM Sans', sans-serif;
+  --mono:  'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); overflow: hidden; }
+body { font-family: var(--body); color: var(--text); -webkit-tap-highlight-color: transparent; }
+button { border: none; outline: none; cursor: pointer; font-family: var(--body); }
+input  { outline: none; font-family: var(--mono); }
+::-webkit-scrollbar { width: 0; }
+
+/* ── LAYOUT ── */
+#app {
+  max-width: 430px; margin: 0 auto;
+  height: 100dvh; display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+
+/* ── HEADER ── */
+#header {
+  padding: 12px 18px 10px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; transition: border-color .4s, background .4s;
+  z-index: 20;
+}
+#header h1 { font-family: var(--font); font-size: 15px; letter-spacing: 3px; color: var(--text); }
+#header-sub { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-top: 2px; }
+#status-badge {
+  font-family: var(--font); font-size: 10px; letter-spacing: 2px;
+  padding: 5px 14px; border-radius: 20px;
+  background: rgba(0,255,148,.12); border: 1px solid rgba(0,255,148,.4);
+  color: var(--green); transition: all .4s;
+}
+
+/* ── CAMERA AREA ── */
+#cam-area {
+  flex: 1; position: relative; background: #020307;
+  overflow: hidden; min-height: 0;
+}
+#video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transform: scaleX(-1); /* mirror front cam */
+}
+#video.rear { transform: none; }
+#canvas { display: none; }
+
+/* ── HUD OVERLAY ── */
+#hud {
+  position: absolute; inset: 0; pointer-events: none;
+  display: none; flex-direction: column; justify-content: space-between;
+  padding: 12px;
+}
+#hud.visible { display: flex; }
+
+/* Scan line */
+#scanline {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green) 50%, transparent);
+  animation: scanDown 3s linear infinite;
+  opacity: .6;
+}
+@keyframes scanDown { 0%{top:0} 100%{top:100%} }
+
+/* Corner brackets */
+.bracket {
+  position: absolute; width: 22px; height: 22px;
+  border-color: var(--hud-color, var(--green));
+  border-style: solid; transition: border-color .4s;
+}
+.bracket.tl { top:8; left:8; border-width:2px 0 0 2px; }
+.bracket.tr { top:8; right:8; border-width:2px 2px 0 0; }
+.bracket.bl { bottom:8; left:8; border-width:0 0 2px 2px; }
+.bracket.br { bottom:8; right:8; border-width:0 2px 2px 0; }
+
+/* Level pill */
+#level-pill {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font); font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  padding: 4px 18px; border-radius: 20px;
+  background: rgba(0,255,148,.15); border: 1px solid var(--green);
+  color: var(--green); transition: all .4s; white-space: nowrap;
+}
+
+/* Detection info */
+#detection-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(3,4,10,.88); border-top: 1px solid rgba(255,255,255,.08);
+  padding: 10px 14px; backdrop-filter: blur(10px);
+}
+#detection-text {
+  font-family: var(--body); font-size: 13px; color: var(--text);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+#detection-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0; transition: background .3s;
+}
+#direction-label {
+  font-family: var(--mono); font-size: 10px; color: var(--green);
+  letter-spacing: 1px; transition: color .3s;
+}
+
+/* No cam placeholder */
+#no-cam {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; color: var(--muted);
+}
+#no-cam .icon { font-size: 48px; }
+#no-cam p { font-size: 13px; text-align: center; padding: 0 32px; line-height: 1.5; }
+
+/* ── CONTROLS ── */
+#controls {
+  flex-shrink: 0; padding: 14px 18px 18px;
+  background: var(--bg2); border-top: 1px solid var(--border);
+}
+
+/* Big button */
+#main-btn {
+  width: 100%; padding: 17px 0; border-radius: 14px;
+  font-family: var(--font); font-size: 13px; font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(135deg,rgba(0,255,148,.2),rgba(0,255,148,.08));
+  border: 2px solid var(--green); color: var(--green);
+  box-shadow: 0 0 32px rgba(0,255,148,.25);
+  transition: all .4s; margin-bottom: 12px;
+  position: relative; overflow: hidden;
+}
+#main-btn.active {
+  background: linear-gradient(135deg,rgba(255,23,68,.2),rgba(255,23,68,.08));
+  border-color: var(--red); color: var(--red);
+  box-shadow: 0 0 32px rgba(255,23,68,.25);
+}
+
+/* Settings row */
+#settings-row {
+  display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+}
+.sens-btn {
+  flex: 1; padding: 7px 0; border-radius: 8px;
+  font-family: var(--mono); font-size: 10px;
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  transition: all .2s;
+}
+.sens-btn.active {
+  border-color: var(--cyan); background: rgba(0,229,255,.12);
+  color: var(--cyan);
+}
+#cam-flip-btn {
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--muted); font-size: 16px;
+}
+
+/* API key row */
+#key-row {
+  display: flex; gap: 8px; align-items: center;
+}
+#key-input {
+  flex: 1; padding: 7px 10px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--text); font-size: 12px;
+  transition: border-color .2s;
+}
+#key-input:focus { border-color: var(--cyan); }
+#key-status {
+  font-family: var(--mono); font-size: 10px;
+  white-space: nowrap;
+}
+#key-toggle {
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--muted); font-size: 11px; font-family: var(--mono);
+}
+
+/* ── HISTORY LOG ── */
+#log {
+  max-height: 100px; overflow-y: auto;
+  padding: 8px 18px; border-top: 1px solid var(--border);
+  background: var(--bg); flex-shrink: 0; display: none;
+}
+#log.visible { display: block; }
+.log-entry {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.log-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.log-time { font-family: var(--mono); font-size: 9px; color: var(--muted); flex-shrink: 0; }
+.log-text { font-family: var(--body); font-size: 11px; color: var(--text); flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-dir  { font-family: var(--mono); font-size: 9px; flex-shrink: 0; }
+
+/* ── DANGER FLASH ── */
+#danger-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: rgba(255,23,68,.12); opacity: 0;
+  animation: none;
+}
+#danger-flash.active { animation: dFlash .5s ease-in-out infinite; }
+@keyframes dFlash { 0%,100%{opacity:0} 50%{opacity:1} }
+
+/* ── WARN BANNER ── */
+#warn-banner {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 30;
+  background: var(--warn); color: #000;
+  font-family: var(--font); font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-align: center; padding: 8px;
+  transform: translateY(-100%); transition: transform .3s;
+}
+#warn-banner.visible { transform: translateY(0); }
+
+/* ── ANIMATIONS ── */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+@keyframes rp    { 0%{opacity:.6;r:80} 100%{opacity:0;r:100} }
+
+/* level colors */
+.level-sicher  { --hud-color: var(--green); }
+.level-achtung { --hud-color: var(--warn);  }
+.level-stopp   { --hud-color: var(--red);   }
+</style>
+</head>
+<body>
+<div id="danger-flash"></div>
+<div id="warn-banner">⚠ SCHAU AUF DEN WEG!</div>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div>
+      <h1>OMBRA</h1>
+      <div id="header-sub">DISTRACTED WALKING GUARD</div>
+    </div>
+    <div id="status-badge">● BEREIT</div>
+  </div>
+
+  <!-- CAMERA AREA -->
+  <div id="cam-area">
+    <video id="video" autoplay playsinline muted webkit-playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- No camera placeholder -->
+    <div id="no-cam">
+      <div class="icon">📷</div>
+      <p>Kamera-Zugriff nötig.<br/>Aktiviere den Schutz um zu starten.</p>
+    </div>
+
+    <!-- HUD (shown when active) -->
+    <div id="hud">
+      <div id="scanline"></div>
+      <div class="bracket tl"></div>
+      <div class="bracket tr"></div>
+      <div class="bracket bl"></div>
+      <div class="bracket br"></div>
+
+      <div id="level-pill">● FREI</div>
+
+      <!-- Threat bar -->
+      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--muted);writing-mode:vertical-rl;letter-spacing:1px;margin-bottom:4px">THREAT</div>
+        <div style="width:6px;height:80px;background:var(--dim);border-radius:3px;overflow:hidden;position:relative">
+          <div id="threat-bar" style="position:absolute;bottom:0;left:0;right:0;height:0%;background:var(--green);transition:height .8s,background .4s;box-shadow:0 0 8px var(--green)"></div>
+        </div>
+        <div id="threat-pct" style="font-family:var(--mono);font-size:8px;color:var(--green);transition:color .3s">0%</div>
+      </div>
+
+      <!-- Analysing dot -->
+      <div id="analyzing-dot" style="position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--warn);display:none;animation:blink .5s infinite"></div>
+
+      <div id="detection-bar">
+        <div id="detection-text">
+          <div id="detection-dot"></div>
+          <span id="detection-msg">Beobachte Umgebung...</span>
+        </div>
+        <div id="direction-label"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="log"></div>
+
+  <!-- CONTROLS -->
+  <div id="controls">
+    <!-- Settings -->
+    <div id="settings-row">
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;flex-shrink:0">INTERVALL</span>
+      <button class="sens-btn" data-s="2000">2s</button>
+      <button class="sens-btn active" data-s="3500">3.5s</button>
+      <button class="sens-btn" data-s="6000">6s</button>
+      <button id="cam-flip-btn" title="Kamera wechseln">🔄</button>
+    </div>
+
+    <!-- API Key -->
+    <div id="key-row" style="margin-bottom:12px">
+      <input id="key-input" type="password" placeholder="sk-ant-api03-... (Anthropic Key)"/>
+      <div id="key-status" style="color:var(--muted)">KEIN KEY</div>
+      <button id="key-toggle">EDIT</button>
+    </div>
+
+    <!-- Main button -->
+    <button id="main-btn">▶  SCHUTZ AKTIVIEREN</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ── STATE ── */
+let active    = false;
+let stream    = null;
+let loopTimer = null;
+let interval  = 3500;
+let facing    = 'environment';
+let apiKey    = localStorage.getItem('ombra_key') || '';
+let showKey   = false;
+let logData   = [];
+let analyzing = false;
+let lastLevel = 'frei';
+let scanCount = 0;
+
+const LV = {
+  frei:    { color:'#00FF94', pct:0,   label:'● FREI',    dir:'' },
+  achtung: { color:'#FFB300', pct:60,  label:'● ACHTUNG', dir:'' },
+  stopp:   { color:'#FF1744', pct:100, label:'● STOPP',   dir:'' },
+};
+
+/* ── ELEMENTS ── */
+const $  = id => document.getElementById(id);
+const video     = $('video');
+const canvas    = $('canvas');
+const hud       = $('hud');
+const noCam     = $('no-cam');
+const mainBtn   = $('main-btn');
+const statusBadge = $('status-badge');
+const levelPill = $('level-pill');
+const detDot    = $('detection-dot');
+const detMsg    = $('detection-msg');
+const dirLabel  = $('direction-label');
+const threatBar = $('threat-bar');
+const threatPct = $('threat-pct');
+const analDot   = $('analyzing-dot');
+const warnBanner= $('warn-banner');
+const dangerFlash=$('danger-flash');
+const logEl     = $('log');
+const keyInput  = $('key-input');
+const keyStatus = $('key-status');
+const keyToggle = $('key-toggle');
+const camFlip   = $('cam-flip-btn');
+const header    = $('header');
+
+/* ── API KEY ── */
+if (apiKey) {
+  keyInput.value = apiKey;
+  updateKeyStatus();
+}
+
+keyInput.addEventListener('input', () => {
+  apiKey = keyInput.value.trim();
+  localStorage.setItem('ombra_key', apiKey);
+  updateKeyStatus();
+});
+
+keyToggle.addEventListener('click', () => {
+  showKey = !showKey;
+  keyInput.style.display = showKey ? 'block' : 'none';
+  keyToggle.textContent = showKey ? 'OK' : 'EDIT';
+});
+keyInput.style.display = 'none'; // hidden by default
+
+function updateKeyStatus() {
+  if (apiKey && apiKey.startsWith('sk-ant')) {
+    keyStatus.textContent = '✓ KEY OK';
+    keyStatus.style.color = '#00FF94';
+  } else if (apiKey) {
+    keyStatus.textContent = '⚠ FORMAT?';
+    keyStatus.style.color = '#FFB300';
+  } else {
+    keyStatus.textContent = 'DEMO';
+    keyStatus.style.color = '#606470';
+  }
+}
+
+/* ── INTERVAL SELECTOR ── */
+document.querySelectorAll('.sens-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sens-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    interval = parseInt(btn.dataset.s);
+    if (active) restartLoop();
+  });
+});
+
+/* ── CAMERA FLIP ── */
+camFlip.addEventListener('click', async () => {
+  facing = facing === 'environment' ? 'user' : 'environment';
+  video.className = facing === 'user' ? '' : 'rear';
+  if (active) {
+    stream?.getTracks().forEach(t => t.stop());
+    await startCamera();
+  }
+});
+
+/* ── MAIN BUTTON ── */
+mainBtn.addEventListener('click', () => {
+  if (active) stopProtection();
+  else startProtection();
+});
+
+/* ── START ── */
+async function startProtection() {
+  const ok = await startCamera();
+  if (!ok) return;
+  active = true;
+  mainBtn.classList.add('active');
+  mainBtn.textContent = '⏹  SCHUTZ DEAKTIVIEREN';
+  hud.classList.add('visible');
+  noCam.style.display = 'none';
+  setLevel('frei', 'Kamera aktiv — scanne Umgebung', '--');
+  // Success beep
+  playTone(520, 0.15);
+  setTimeout(() => playTone(660, 0.2), 180);
+  startLoop();
+}
+
+/* ── STOP ── */
+function stopProtection() {
+  active = false;
+  stream?.getTracks().forEach(t => t.stop());
+  stream = null;
+  clearInterval(loopTimer);
+  mainBtn.classList.remove('active');
+  mainBtn.textContent = '▶  SCHUTZ AKTIVIEREN';
+  hud.classList.remove('visible');
+  noCam.style.display = 'flex';
+  statusBadge.textContent = '● BEREIT';
+  statusBadge.style.cssText = '';
+  header.style.cssText = '';
+  dangerFlash.classList.remove('active');
+  warnBanner.classList.remove('visible');
+  setLevel('frei', '', '--');
+}
+
+/* ── CAMERA ── */
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: facing },
+        width:  { ideal: 1280 },
+        height: { ideal: 720 },
+      }
+    });
+    video.srcObject = stream;
+    await video.play();
+    video.className = facing === 'user' ? '' : 'rear';
+    return true;
+  } catch (e) {
+    console.warn('Camera error:', e.name, e.message);
+    // Still start in demo mode
+    noCam.querySelector('p').textContent =
+      'Demo-Modus aktiv — Kamera nicht verfügbar.\nSimulierte Erkennung läuft.';
+    return true; // continue in demo mode
+  }
+}
+
+/* ── ANALYSIS LOOP ── */
+function startLoop() {
+  clearInterval(loopTimer);
+  doAnalysis(); // immediate first run
+  loopTimer = setInterval(doAnalysis, interval);
+}
+
+function restartLoop() {
+  clearInterval(loopTimer);
+  loopTimer = setInterval(doAnalysis, interval);
+}
+
+async function doAnalysis() {
+  if (analyzing) return;
+  analyzing = true;
+  analDot.style.display = 'block';
+  scanCount++;
+
+  try {
+    const b64 = captureFrame();
+
+    if (b64 && apiKey && apiKey.startsWith('sk-ant')) {
+      // Real Claude Vision analysis
+      const result = await callClaude(b64);
+      applyResult(result);
+    } else {
+      // Demo simulation
+      await sleep(400);
+      const r = Math.random();
+      if (r < 0.60)      applyResult({ level:'frei',    object:'Weg ist frei',              direction:'--',    distance:'--'   });
+      else if (r < 0.82) applyResult({ level:'achtung', object:'Fahrrad nähert sich',        direction:'links', distance:'mittel'});
+      else               applyResult({ level:'stopp',   object:'Fahrzeug direkt vor dir!',   direction:'mitte', distance:'nah'  });
+    }
+  } catch(e) {
+    console.warn('Analysis error:', e);
+  }
+
+  analyzing = false;
+  analDot.style.display = 'none';
+}
+
+/* ── CAPTURE FRAME ── */
+function captureFrame() {
+  if (!video.videoWidth) return null;
+  canvas.width  = 320;
+  canvas.height = 240;
+  const ctx = canvas.getContext('2d');
+  if (facing === 'user') {
+    ctx.translate(320, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(video, 0, 0, 320, 240);
+  return canvas.toDataURL('image/jpeg', 0.65).split(',')[1];
+}
+
+/* ── CLAUDE API ── */
+async function callClaude(b64) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 120,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: 'image/jpeg', data: b64 }
+          },
+          {
+            type: 'text',
+            text: `Schütze Fussgänger die auf ihr Handy schauen. Analysiere das Kamerabild (Blickrichtung: nach vorne beim Gehen).
+Erkenne: Fahrzeuge (Auto/Tram/Bus), Fahrräder, E-Scooter, Personen im Weg, rote Ampel, Stufen/Bordstein, Hindernisse.
+Antworte NUR als kompaktes JSON ohne Markdown:
+{"level":"frei"|"achtung"|"stopp","object":"was auf deutsch","direction":"links|mitte|rechts|--","distance":"nah|mittel|weit|--"}
+Regeln: frei=nichts gefährliches nah, achtung=Objekt nähert sich von Seite/hinten, stopp=unmittelbare Gefahr direkt vor dir`
+          }
+        ]
+      }]
+    })
+  });
+  const d = await res.json();
+  const txt = d.content?.[0]?.text || '{}';
+  return JSON.parse(txt.replace(/```json|```/g, '').trim());
+}
+
+/* ── APPLY RESULT ── */
+function applyResult(r) {
+  const lv  = r.level || 'frei';
+  const obj = r.object || '';
+  const dir = r.direction || '--';
+
+  setLevel(lv, obj, dir);
+
+  // Alert on change or persistent stopp
+  if (lv !== 'frei' && (lv !== lastLevel || lv === 'stopp')) {
+    playAlert(lv);
+    navigator.vibrate?.(lv === 'stopp' ? [200,100,200,100,200] : [80,60,80]);
+    addLog(lv, obj, dir);
+  }
+  lastLevel = lv;
+}
+
+/* ── SET LEVEL ── */
+function setLevel(lv, msg, dir) {
+  const L = LV[lv] || LV.frei;
+
+  // Level pill
+  levelPill.textContent = L.label;
+  levelPill.style.color = L.color;
+  levelPill.style.borderColor = L.color;
+  levelPill.style.background = L.color + '22';
+
+  // Detection
+  detDot.style.background = L.color;
+  detMsg.textContent = msg || 'Beobachte Umgebung...';
+  dirLabel.textContent = {
+    links:'← VON LINKS', mitte:'↑ VON VORNE', rechts:'VON RECHTS →', '--':''
+  }[dir] || '';
+  dirLabel.style.color = L.color;
+
+  // Threat bar
+  threatBar.style.height  = L.pct + '%';
+  threatBar.style.background = L.color;
+  threatBar.style.boxShadow  = `0 0 8px ${L.color}`;
+  threatPct.textContent = L.pct + '%';
+  threatPct.style.color = L.color;
+
+  // HUD brackets color
+  document.querySelectorAll('.bracket').forEach(b => {
+    b.style.borderColor = L.color;
+  });
+
+  // Status badge
+  statusBadge.textContent = '● ' + lv.toUpperCase();
+  statusBadge.style.color = L.color;
+  statusBadge.style.borderColor = L.color + '66';
+  statusBadge.style.background = L.color + '22';
+
+  // Header background tint
+  if (lv === 'stopp') {
+    header.style.background = '#130005';
+    header.style.borderBottomColor = L.color + '66';
+  } else if (lv === 'achtung') {
+    header.style.background = '#110900';
+    header.style.borderBottomColor = L.color + '44';
+  } else {
+    header.style.background = '';
+    header.style.borderBottomColor = '';
+  }
+
+  // Danger flash + warn banner
+  if (lv === 'stopp') {
+    dangerFlash.classList.add('active');
+    warnBanner.classList.add('visible');
+    warnBanner.style.background = L.color;
+  } else if (lv === 'achtung') {
+    dangerFlash.classList.remove('active');
+    warnBanner.classList.add('visible');
+    warnBanner.style.background = '#FFB300';
+    warnBanner.textContent = '⚠ ACHTUNG — ' + (msg || '').toUpperCase();
+    setTimeout(() => warnBanner.classList.remove('visible'), 3000);
+  } else {
+    dangerFlash.classList.remove('active');
+    warnBanner.classList.remove('visible');
+    warnBanner.textContent = '⚠ SCHAU AUF DEN WEG!';
+  }
+}
+
+/* ── LOG ── */
+function addLog(lv, msg, dir) {
+  const L = LV[lv] || LV.frei;
+  const time = new Date().toLocaleTimeString('de', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dirs = {links:'←', mitte:'↑', rechts:'→', '--':''};
+
+  logData.unshift({lv, msg, dir, time});
+  if (logData.length > 30) logData.pop();
+
+  logEl.innerHTML = logData.slice(0,8).map(e => {
+    const c = LV[e.lv]?.color || '#666';
+    return `<div class="log-entry">
+      <div class="log-dot" style="background:${c}"></div>
+      <span class="log-time">${e.time}</span>
+      <span class="log-text">${e.msg}</span>
+      <span class="log-dir" style="color:${c}">${dirs[e.dir]||''}</span>
+    </div>`;
+  }).join('');
+
+  logEl.classList.add('visible');
+}
+
+/* ── AUDIO ── */
+let actx = null;
+function playTone(freq, dur, type='sine', vol=0.15) {
+  try {
+    if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.start(); o.stop(actx.currentTime + dur);
+  } catch(e) {}
+}
+
+function playAlert(lv) {
+  if (lv === 'achtung') {
+    playTone(660, 0.25);
+    setTimeout(() => playTone(550, 0.25), 300);
+  }
+  if (lv === 'stopp') {
+    [0, 150, 300].forEach(d => setTimeout(() => playTone(880, 0.15, 'square', 0.22), d));
+  }
+}
+
+/* ── UTILS ── */
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
