@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Ombra"/>
 <title>Ombra – Distracted Walking Guard</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
+&lt;style>
 :root {
   --bg:    #03040A;
   --bg2:   #08090F;
@@ -26,7 +26,7 @@
   --mono:  'DM Mono', monospace;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--bg); overflow: hidden; }
+html, body { height: 100%; background: var(--bg); overflow: auto; }
 body { font-family: var(--body); color: var(--text); -webkit-tap-highlight-color: transparent; }
 button { border: none; outline: none; cursor: pointer; font-family: var(--body); }
 input  { outline: none; font-family: var(--mono); }
@@ -35,8 +35,8 @@ input  { outline: none; font-family: var(--mono); }
 /* ── LAYOUT ── */
 #app {
   max-width: 430px; margin: 0 auto;
-  height: 100dvh; display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
+  min-height: 100dvh; display: flex; flex-direction: column;
+  position: relative; overflow: auto;
 }
 
 /* ── HEADER ── */
@@ -59,11 +59,11 @@ input  { outline: none; font-family: var(--mono); }
 /* ── CAMERA AREA ── */
 #cam-area {
   flex: 1; position: relative; background: #020307;
-  overflow: hidden; min-height: 0;
+  overflow: hidden; min-height: 200px;
 }
 #video {
   width: 100%; height: 100%; object-fit: cover; display: block;
-  transform: scaleX(-1); /* mirror front cam */
+  transform: scaleX(-1);
 }
 #video.rear { transform: none; }
 #canvas { display: none; }
@@ -91,10 +91,10 @@ input  { outline: none; font-family: var(--mono); }
   border-color: var(--hud-color, var(--green));
   border-style: solid; transition: border-color .4s;
 }
-.bracket.tl { top:8; left:8; border-width:2px 0 0 2px; }
-.bracket.tr { top:8; right:8; border-width:2px 2px 0 0; }
-.bracket.bl { bottom:8; left:8; border-width:0 0 2px 2px; }
-.bracket.br { bottom:8; right:8; border-width:0 2px 2px 0; }
+.bracket.tl { top:8px; left:8px; border-width:2px 0 0 2px; }
+.bracket.tr { top:8px; right:8px; border-width:2px 2px 0 0; }
+.bracket.bl { bottom:8px; left:8px; border-width:0 0 2px 2px; }
+.bracket.br { bottom:8px; right:8px; border-width:0 2px 2px 0; }
 
 /* Level pill */
 #level-pill {
@@ -174,6 +174,12 @@ input  { outline: none; font-family: var(--mono); }
   background: var(--glass); border: 1px solid var(--border);
   color: var(--muted); font-size: 16px;
 }
+#pip-btn {
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; font-family: var(--mono);
+  transition: all .3s;
+}
 
 /* API key row */
 #key-row {
@@ -240,7 +246,7 @@ input  { outline: none; font-family: var(--mono); }
 .level-sicher  { --hud-color: var(--green); }
 .level-achtung { --hud-color: var(--warn);  }
 .level-stopp   { --hud-color: var(--red);   }
-</style>
+&lt;/style>
 </head>
 <body>
 <div id="danger-flash"></div>
@@ -312,6 +318,7 @@ input  { outline: none; font-family: var(--mono); }
       <button class="sens-btn active" data-s="3500">3.5s</button>
       <button class="sens-btn" data-s="6000">6s</button>
       <button id="cam-flip-btn" title="Kamera wechseln">🔄</button>
+      <button id="pip-btn" title="Picture-in-Picture">🪟 PiP</button>
     </div>
 
     <!-- API Key -->
@@ -327,7 +334,7 @@ input  { outline: none; font-family: var(--mono); }
 
 </div><!-- /app -->
 
-<script>
+&lt;script>
 /* ── STATE ── */
 let active    = false;
 let stream    = null;
@@ -388,7 +395,7 @@ keyToggle.addEventListener('click', () => {
   keyInput.style.display = showKey ? 'block' : 'none';
   keyToggle.textContent = showKey ? 'OK' : 'EDIT';
 });
-keyInput.style.display = 'none'; // hidden by default
+keyInput.style.display = 'none';
 
 function updateKeyStatus() {
   if (apiKey && apiKey.startsWith('sk-ant')) {
@@ -439,7 +446,6 @@ async function startProtection() {
   hud.classList.add('visible');
   noCam.style.display = 'none';
   setLevel('frei', 'Kamera aktiv — scanne Umgebung', '--');
-  // Success beep
   playTone(520, 0.15);
   setTimeout(() => playTone(660, 0.2), 180);
   startLoop();
@@ -479,17 +485,16 @@ async function startCamera() {
     return true;
   } catch (e) {
     console.warn('Camera error:', e.name, e.message);
-    // Still start in demo mode
     noCam.querySelector('p').textContent =
       'Demo-Modus aktiv — Kamera nicht verfügbar.\nSimulierte Erkennung läuft.';
-    return true; // continue in demo mode
+    return true;
   }
 }
 
 /* ── ANALYSIS LOOP ── */
 function startLoop() {
   clearInterval(loopTimer);
-  doAnalysis(); // immediate first run
+  doAnalysis();
   loopTimer = setInterval(doAnalysis, interval);
 }
 
@@ -508,11 +513,9 @@ async function doAnalysis() {
     const b64 = captureFrame();
 
     if (b64 && apiKey && apiKey.startsWith('sk-ant')) {
-      // Real Claude Vision analysis
       const result = await callClaude(b64);
       applyResult(result);
     } else {
-      // Demo simulation
       await sleep(400);
       const r = Math.random();
       if (r < 0.60)      applyResult({ level:'frei',    object:'Weg ist frei',              direction:'--',    distance:'--'   });
@@ -586,7 +589,6 @@ function applyResult(r) {
 
   setLevel(lv, obj, dir);
 
-  // Alert on change or persistent stopp
   if (lv !== 'frei' && (lv !== lastLevel || lv === 'stopp')) {
     playAlert(lv);
     navigator.vibrate?.(lv === 'stopp' ? [200,100,200,100,200] : [80,60,80]);
@@ -599,13 +601,11 @@ function applyResult(r) {
 function setLevel(lv, msg, dir) {
   const L = LV[lv] || LV.frei;
 
-  // Level pill
   levelPill.textContent = L.label;
   levelPill.style.color = L.color;
   levelPill.style.borderColor = L.color;
   levelPill.style.background = L.color + '22';
 
-  // Detection
   detDot.style.background = L.color;
   detMsg.textContent = msg || 'Beobachte Umgebung...';
   dirLabel.textContent = {
@@ -613,25 +613,21 @@ function setLevel(lv, msg, dir) {
   }[dir] || '';
   dirLabel.style.color = L.color;
 
-  // Threat bar
   threatBar.style.height  = L.pct + '%';
   threatBar.style.background = L.color;
   threatBar.style.boxShadow  = `0 0 8px ${L.color}`;
   threatPct.textContent = L.pct + '%';
   threatPct.style.color = L.color;
 
-  // HUD brackets color
   document.querySelectorAll('.bracket').forEach(b => {
     b.style.borderColor = L.color;
   });
 
-  // Status badge
   statusBadge.textContent = '● ' + lv.toUpperCase();
   statusBadge.style.color = L.color;
   statusBadge.style.borderColor = L.color + '66';
   statusBadge.style.background = L.color + '22';
 
-  // Header background tint
   if (lv === 'stopp') {
     header.style.background = '#130005';
     header.style.borderBottomColor = L.color + '66';
@@ -643,7 +639,6 @@ function setLevel(lv, msg, dir) {
     header.style.borderBottomColor = '';
   }
 
-  // Danger flash + warn banner
   if (lv === 'stopp') {
     dangerFlash.classList.add('active');
     warnBanner.classList.add('visible');
@@ -710,6 +705,97 @@ function playAlert(lv) {
 
 /* ── UTILS ── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-</script>
+
+/* ── PiP (Picture-in-Picture) ── */
+const pipBtn = document.getElementById('pip-btn');
+const pipCanvas = document.createElement('canvas');
+pipCanvas.width = 320;
+pipCanvas.height = 240;
+const pipCtx = pipCanvas.getContext('2d');
+let pipVideo = null;
+let pipStream = null;
+let pipLoop = null;
+
+pipBtn.addEventListener('click', async () => {
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      if (pipLoop) cancelAnimationFrame(pipLoop);
+      pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
+      pipBtn.style.color = '#606470';
+      return;
+    }
+
+    if (!pipVideo) {
+      pipVideo = document.createElement('video');
+      pipVideo.muted = true;
+      pipVideo.autoplay = true;
+      pipVideo.playsInline = true;
+    }
+
+    pipStream = pipCanvas.captureStream(15);
+    pipVideo.srcObject = pipStream;
+    await pipVideo.play();
+
+    function drawPiP() {
+      if (video.videoWidth) {
+        pipCtx.drawImage(video, 0, 0, 320, 240);
+      }
+
+      const colors = { frei:'#00FF94', achtung:'#FFB300', stopp:'#FF1744' };
+      const c = colors[lastLevel] || '#00FF94';
+      const lw = lastLevel === 'stopp' ? 8 : lastLevel === 'achtung' ? 5 : 2;
+
+      pipCtx.strokeStyle = c;
+      pipCtx.lineWidth = lw;
+      pipCtx.strokeRect(0, 0, 320, 240);
+
+      pipCtx.fillStyle = 'rgba(0,0,0,0.7)';
+      pipCtx.fillRect(90, 4, 140, 24);
+      pipCtx.font = 'bold 14px monospace';
+      pipCtx.fillStyle = c;
+      pipCtx.textAlign = 'center';
+      pipCtx.fillText(lastLevel.toUpperCase(), 160, 21);
+
+      if (lastLevel !== 'frei') {
+        pipCtx.fillStyle = 'rgba(0,0,0,0.8)';
+        pipCtx.fillRect(0, 200, 320, 40);
+        pipCtx.font = '12px sans-serif';
+        pipCtx.fillStyle = c;
+        pipCtx.textAlign = 'center';
+        const msg = document.getElementById('detection-msg').textContent;
+        pipCtx.fillText(msg, 160, 224);
+      }
+
+      if (lastLevel === 'stopp' && Math.floor(Date.now()/300) % 2 === 0) {
+        pipCtx.fillStyle = 'rgba(255,23,68,0.2)';
+        pipCtx.fillRect(0, 0, 320, 240);
+      }
+
+      pipLoop = requestAnimationFrame(drawPiP);
+    }
+    drawPiP();
+
+    await pipVideo.requestPictureInPicture();
+    pipBtn.style.borderColor = '#00E5FF';
+    pipBtn.style.color = '#00E5FF';
+
+  } catch(e) {
+    try {
+      await video.requestPictureInPicture();
+      pipBtn.style.borderColor = '#00E5FF';
+      pipBtn.style.color = '#00E5FF';
+    } catch(e2) {
+      alert('PiP nicht verfügbar auf diesem Gerät.');
+    }
+  }
+});
+
+document.addEventListener('leavepictureinpicture', () => {
+  if (pipLoop) cancelAnimationFrame(pipLoop);
+  pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
+  pipBtn.style.color = '#606470';
+});
+&lt;/script>
 </body>
 </html>
