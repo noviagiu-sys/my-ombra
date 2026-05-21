@@ -311,9 +311,8 @@ input  { outline: none; font-family: var(--mono); }
       <button class="sens-btn" data-s="2000">2s</button>
       <button class="sens-btn active" data-s="3500">3.5s</button>
       <button class="sens-btn" data-s="6000">6s</button>
-      <button id="cam-flip-btn" title="Kamera wechseln">🔄</button>
-    </div>
-
+      <button id="pip-btn" style="padding:7px 12px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);color:#606470;font-size:12px;font-family:'DM Mono',monospace;">🪟 PiP</button>
+    
     <!-- API Key -->
     <div id="key-row" style="margin-bottom:12px">
       <input id="key-input" type="password" placeholder="sk-ant-api03-... (Anthropic Key)"/>
@@ -710,6 +709,182 @@ function playAlert(lv) {
 
 /* ── UTILS ── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  
+/* ── PiP (Picture-in-Picture) ── */
+const pipBtn = document.getElementById('pip-btn');
+const pipCanvas = document.createElement('canvas');
+pipCanvas.width = 320;
+pipCanvas.height = 240;
+const pipCtx = pipCanvas.getContext('2d');
+let pipVideo = null;
+let pipStream = null;
+let pipLoop = null;
+
+pipBtn.addEventListener('click', async () => {
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      if (pipLoop) cancelAnimationFrame(pipLoop);
+      pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
+      pipBtn.style.color = '#606470';
+      return;
+    }
+
+    if (!pipVideo) {
+      pipVideo = document.createElement('video');
+      pipVideo.muted = true;
+      pipVideo.autoplay = true;
+      pipVideo.playsInline = true;
+    }
+
+    pipStream = pipCanvas.captureStream(15);
+    pipVideo.srcObject = pipStream;
+    await pipVideo.play();
+
+    function drawPiP() {
+      if (video.videoWidth) {
+        pipCtx.drawImage(video, 0, 0, 320, 240);
+      }
+
+      const colors = { frei:'#00FF94', achtung:'#FFB300', stopp:'#FF1744' };
+      const c = colors[lastLevel] || '#00FF94';
+      const lw = lastLevel === 'stopp' ? 8 : lastLevel === 'achtung' ? 5 : 2;
+
+      pipCtx.strokeStyle = c;
+      pipCtx.lineWidth = lw;
+      pipCtx.strokeRect(0, 0, 320, 240);
+
+      pipCtx.fillStyle = 'rgba(0,0,0,0.7)';
+      pipCtx.fillRect(90, 4, 140, 24);
+      pipCtx.font = 'bold 14px Orbitron, monospace';
+      pipCtx.fillStyle = c;
+      pipCtx.textAlign = 'center';
+      pipCtx.fillText(lastLevel.toUpperCase(), 160, 21);
+
+      if (lastLevel !== 'frei') {
+        pipCtx.fillStyle = 'rgba(0,0,0,0.8)';
+        pipCtx.fillRect(0, 200, 320, 40);
+        pipCtx.font = '12px DM Sans, sans-serif';
+        pipCtx.fillStyle = c;
+        pipCtx.textAlign = 'center';
+        const msg = document.getElementById('detection-msg').textContent;
+        pipCtx.fillText(msg, 160, 224);
+      }
+
+      if (lastLevel === 'stopp' && Math.floor(Date.now()/300) % 2 === 0) {
+        pipCtx.fillStyle = 'rgba(255,23,68,0.2)';
+        pipCtx.fillRect(0, 0, 320, 240);
+      }
+
+      pipLoop = requestAnimationFrame(drawPiP);
+    }
+    drawPiP();
+
+    await pipVideo.requestPictureInPicture();
+    pipBtn.style.borderColor = '#00E5FF';
+    pipBtn.style.color = '#00E5FF';
+
+  } catch(e) {
+    try {
+      await video.requestPictureInPicture();
+      pipBtn.style.borderColor = '#00E5FF';
+      pipBtn.style.color = '#00E5FF';
+    } catch(e2) {
+      alert('PiP nicht verfügbar auf diesem Gerät.');
+    }
+  }
+});
+/* ── PiP (Picture-in-Picture) ── */
+const pipBtn = document.getElementById('pip-btn');
+const pipCanvas = document.createElement('canvas');
+pipCanvas.width = 320;
+pipCanvas.height = 240;
+const pipCtx = pipCanvas.getContext('2d');
+let pipVideo = null;
+let pipStream = null;
+let pipLoop = null;
+
+pipBtn.addEventListener('click', async () => {
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      if (pipLoop) cancelAnimationFrame(pipLoop);
+      pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
+      pipBtn.style.color = '#606470';
+      return;
+    }
+
+    if (!pipVideo) {
+      pipVideo = document.createElement('video');
+      pipVideo.muted = true;
+      pipVideo.autoplay = true;
+      pipVideo.playsInline = true;
+    }
+
+    pipStream = pipCanvas.captureStream(15);
+    pipVideo.srcObject = pipStream;
+    await pipVideo.play();
+
+    function drawPiP() {
+      if (video.videoWidth) {
+        pipCtx.drawImage(video, 0, 0, 320, 240);
+      }
+
+      const colors = { frei:'#00FF94', achtung:'#FFB300', stopp:'#FF1744' };
+      const c = colors[lastLevel] || '#00FF94';
+      const lw = lastLevel === 'stopp' ? 8 : lastLevel === 'achtung' ? 5 : 2;
+
+      pipCtx.strokeStyle = c;
+      pipCtx.lineWidth = lw;
+      pipCtx.strokeRect(0, 0, 320, 240);
+
+      pipCtx.fillStyle = 'rgba(0,0,0,0.7)';
+      pipCtx.fillRect(90, 4, 140, 24);
+      pipCtx.font = 'bold 14px Orbitron, monospace';
+      pipCtx.fillStyle = c;
+      pipCtx.textAlign = 'center';
+      pipCtx.fillText(lastLevel.toUpperCase(), 160, 21);
+
+      if (lastLevel !== 'frei') {
+        pipCtx.fillStyle = 'rgba(0,0,0,0.8)';
+        pipCtx.fillRect(0, 200, 320, 40);
+        pipCtx.font = '12px DM Sans, sans-serif';
+        pipCtx.fillStyle = c;
+        pipCtx.textAlign = 'center';
+        const msg = document.getElementById('detection-msg').textContent;
+        pipCtx.fillText(msg, 160, 224);
+      }
+
+      if (lastLevel === 'stopp' && Math.floor(Date.now()/300) % 2 === 0) {
+        pipCtx.fillStyle = 'rgba(255,23,68,0.2)';
+        pipCtx.fillRect(0, 0, 320, 240);
+      }
+
+      pipLoop = requestAnimationFrame(drawPiP);
+    }
+    drawPiP();
+
+    await pipVideo.requestPictureInPicture();
+    pipBtn.style.borderColor = '#00E5FF';
+    pipBtn.style.color = '#00E5FF';
+
+  } catch(e) {
+    try {
+      await video.requestPictureInPicture();
+      pipBtn.style.borderColor = '#00E5FF';
+      pipBtn.style.color = '#00E5FF';
+    } catch(e2) {
+      alert('PiP nicht verfügbar auf diesem Gerät.');
+    }
+  }
+});
+
+document.addEventListener('leavepictureinpicture', () => {
+  if (pipLoop) cancelAnimationFrame(pipLoop);
+  pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
+  pipBtn.style.color = '#606470';
+});
+
 </script>
 </body>
 </html>
