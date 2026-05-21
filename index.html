@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Ombra"/>
 <title>Ombra – Distracted Walking Guard</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
+&lt;style>
 :root {
   --bg:    #03040A;
   --bg2:   #08090F;
@@ -26,7 +26,7 @@
   --mono:  'DM Mono', monospace;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--bg); overflow: hidden; }
+html, body { height: 100%; background: var(--bg); overflow: auto; }
 body { font-family: var(--body); color: var(--text); -webkit-tap-highlight-color: transparent; }
 button { border: none; outline: none; cursor: pointer; font-family: var(--body); }
 input  { outline: none; font-family: var(--mono); }
@@ -35,8 +35,8 @@ input  { outline: none; font-family: var(--mono); }
 /* ── LAYOUT ── */
 #app {
   max-width: 430px; margin: 0 auto;
-  height: 100dvh; display: flex; flex-direction: column;
-  position: relative; overflow: hidden;
+  min-height: 100dvh; display: flex; flex-direction: column;
+  position: relative; overflow: auto;
 }
 
 /* ── HEADER ── */
@@ -59,11 +59,11 @@ input  { outline: none; font-family: var(--mono); }
 /* ── CAMERA AREA ── */
 #cam-area {
   flex: 1; position: relative; background: #020307;
-  overflow: hidden; min-height: 0;
+  overflow: hidden; min-height: 200px;
 }
 #video {
   width: 100%; height: 100%; object-fit: cover; display: block;
-  transform: scaleX(-1); /* mirror front cam */
+  transform: scaleX(-1);
 }
 #video.rear { transform: none; }
 #canvas { display: none; }
@@ -76,7 +76,6 @@ input  { outline: none; font-family: var(--mono); }
 }
 #hud.visible { display: flex; }
 
-/* Scan line */
 #scanline {
   position: absolute; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, transparent, var(--green) 50%, transparent);
@@ -85,18 +84,16 @@ input  { outline: none; font-family: var(--mono); }
 }
 @keyframes scanDown { 0%{top:0} 100%{top:100%} }
 
-/* Corner brackets */
 .bracket {
   position: absolute; width: 22px; height: 22px;
   border-color: var(--hud-color, var(--green));
   border-style: solid; transition: border-color .4s;
 }
-.bracket.tl { top:8; left:8; border-width:2px 0 0 2px; }
-.bracket.tr { top:8; right:8; border-width:2px 2px 0 0; }
-.bracket.bl { bottom:8; left:8; border-width:0 0 2px 2px; }
-.bracket.br { bottom:8; right:8; border-width:0 2px 2px 0; }
+.bracket.tl { top:8px; left:8px; border-width:2px 0 0 2px; }
+.bracket.tr { top:8px; right:8px; border-width:2px 2px 0 0; }
+.bracket.bl { bottom:8px; left:8px; border-width:0 0 2px 2px; }
+.bracket.br { bottom:8px; right:8px; border-width:0 2px 2px 0; }
 
-/* Level pill */
 #level-pill {
   position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
   font-family: var(--font); font-size: 11px; font-weight: 700; letter-spacing: 2px;
@@ -105,7 +102,6 @@ input  { outline: none; font-family: var(--mono); }
   color: var(--green); transition: all .4s; white-space: nowrap;
 }
 
-/* Detection info */
 #detection-bar {
   position: absolute; bottom: 0; left: 0; right: 0;
   background: rgba(3,4,10,.88); border-top: 1px solid rgba(255,255,255,.08);
@@ -124,7 +120,6 @@ input  { outline: none; font-family: var(--mono); }
   letter-spacing: 1px; transition: color .3s;
 }
 
-/* No cam placeholder */
 #no-cam {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -139,7 +134,6 @@ input  { outline: none; font-family: var(--mono); }
   background: var(--bg2); border-top: 1px solid var(--border);
 }
 
-/* Big button */
 #main-btn {
   width: 100%; padding: 17px 0; border-radius: 14px;
   font-family: var(--font); font-size: 13px; font-weight: 900; letter-spacing: 2px;
@@ -155,7 +149,6 @@ input  { outline: none; font-family: var(--mono); }
   box-shadow: 0 0 32px rgba(255,23,68,.25);
 }
 
-/* Settings row */
 #settings-row {
   display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
 }
@@ -174,8 +167,13 @@ input  { outline: none; font-family: var(--mono); }
   background: var(--glass); border: 1px solid var(--border);
   color: var(--muted); font-size: 16px;
 }
+#pip-btn {
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; font-family: var(--mono);
+  transition: all .3s;
+}
 
-/* API key row */
 #key-row {
   display: flex; gap: 8px; align-items: center;
 }
@@ -236,11 +234,10 @@ input  { outline: none; font-family: var(--mono); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
 @keyframes rp    { 0%{opacity:.6;r:80} 100%{opacity:0;r:100} }
 
-/* level colors */
 .level-sicher  { --hud-color: var(--green); }
 .level-achtung { --hud-color: var(--warn);  }
 .level-stopp   { --hud-color: var(--red);   }
-</style>
+&lt;/style>
 </head>
 <body>
 <div id="danger-flash"></div>
@@ -262,13 +259,11 @@ input  { outline: none; font-family: var(--mono); }
     <video id="video" autoplay playsinline muted webkit-playsinline></video>
     <canvas id="canvas"></canvas>
 
-    <!-- No camera placeholder -->
     <div id="no-cam">
       <div class="icon">📷</div>
       <p>Kamera-Zugriff nötig.<br/>Aktiviere den Schutz um zu starten.</p>
     </div>
 
-    <!-- HUD (shown when active) -->
     <div id="hud">
       <div id="scanline"></div>
       <div class="bracket tl"></div>
@@ -278,7 +273,6 @@ input  { outline: none; font-family: var(--mono); }
 
       <div id="level-pill">● FREI</div>
 
-      <!-- Threat bar -->
       <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px">
         <div style="font-family:var(--mono);font-size:8px;color:var(--muted);writing-mode:vertical-rl;letter-spacing:1px;margin-bottom:4px">THREAT</div>
         <div style="width:6px;height:80px;background:var(--dim);border-radius:3px;overflow:hidden;position:relative">
@@ -287,7 +281,6 @@ input  { outline: none; font-family: var(--mono); }
         <div id="threat-pct" style="font-family:var(--mono);font-size:8px;color:var(--green);transition:color .3s">0%</div>
       </div>
 
-      <!-- Analysing dot -->
       <div id="analyzing-dot" style="position:absolute;top:12px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--warn);display:none;animation:blink .5s infinite"></div>
 
       <div id="detection-bar">
@@ -305,28 +298,27 @@ input  { outline: none; font-family: var(--mono); }
 
   <!-- CONTROLS -->
   <div id="controls">
-    <!-- Settings -->
     <div id="settings-row">
       <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;flex-shrink:0">INTERVALL</span>
       <button class="sens-btn" data-s="2000">2s</button>
       <button class="sens-btn active" data-s="3500">3.5s</button>
       <button class="sens-btn" data-s="6000">6s</button>
-      <button id="pip-btn" style="padding:7px 12px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);color:#606470;font-size:12px;font-family:'DM Mono',monospace;">🪟 PiP</button>
-    
-    <!-- API Key -->
+      <button id="cam-flip-btn" title="Kamera wechseln">🔄</button>
+      <button id="pip-btn" title="Picture-in-Picture">🪟 PiP</button>
+    </div>
+
     <div id="key-row" style="margin-bottom:12px">
       <input id="key-input" type="password" placeholder="sk-ant-api03-... (Anthropic Key)"/>
       <div id="key-status" style="color:var(--muted)">KEIN KEY</div>
       <button id="key-toggle">EDIT</button>
     </div>
 
-    <!-- Main button -->
     <button id="main-btn">▶  SCHUTZ AKTIVIEREN</button>
   </div>
 
-</div><!-- /app -->
+</div>
 
-<script>
+&lt;script>
 /* ── STATE ── */
 let active    = false;
 let stream    = null;
@@ -387,7 +379,7 @@ keyToggle.addEventListener('click', () => {
   keyInput.style.display = showKey ? 'block' : 'none';
   keyToggle.textContent = showKey ? 'OK' : 'EDIT';
 });
-keyInput.style.display = 'none'; // hidden by default
+keyInput.style.display = 'none';
 
 function updateKeyStatus() {
   if (apiKey && apiKey.startsWith('sk-ant')) {
@@ -438,7 +430,6 @@ async function startProtection() {
   hud.classList.add('visible');
   noCam.style.display = 'none';
   setLevel('frei', 'Kamera aktiv — scanne Umgebung', '--');
-  // Success beep
   playTone(520, 0.15);
   setTimeout(() => playTone(660, 0.2), 180);
   startLoop();
@@ -478,17 +469,16 @@ async function startCamera() {
     return true;
   } catch (e) {
     console.warn('Camera error:', e.name, e.message);
-    // Still start in demo mode
     noCam.querySelector('p').textContent =
       'Demo-Modus aktiv — Kamera nicht verfügbar.\nSimulierte Erkennung läuft.';
-    return true; // continue in demo mode
+    return true;
   }
 }
 
 /* ── ANALYSIS LOOP ── */
 function startLoop() {
   clearInterval(loopTimer);
-  doAnalysis(); // immediate first run
+  doAnalysis();
   loopTimer = setInterval(doAnalysis, interval);
 }
 
@@ -507,11 +497,9 @@ async function doAnalysis() {
     const b64 = captureFrame();
 
     if (b64 && apiKey && apiKey.startsWith('sk-ant')) {
-      // Real Claude Vision analysis
       const result = await callClaude(b64);
       applyResult(result);
     } else {
-      // Demo simulation
       await sleep(400);
       const r = Math.random();
       if (r < 0.60)      applyResult({ level:'frei',    object:'Weg ist frei',              direction:'--',    distance:'--'   });
@@ -585,7 +573,6 @@ function applyResult(r) {
 
   setLevel(lv, obj, dir);
 
-  // Alert on change or persistent stopp
   if (lv !== 'frei' && (lv !== lastLevel || lv === 'stopp')) {
     playAlert(lv);
     navigator.vibrate?.(lv === 'stopp' ? [200,100,200,100,200] : [80,60,80]);
@@ -598,13 +585,11 @@ function applyResult(r) {
 function setLevel(lv, msg, dir) {
   const L = LV[lv] || LV.frei;
 
-  // Level pill
   levelPill.textContent = L.label;
   levelPill.style.color = L.color;
   levelPill.style.borderColor = L.color;
   levelPill.style.background = L.color + '22';
 
-  // Detection
   detDot.style.background = L.color;
   detMsg.textContent = msg || 'Beobachte Umgebung...';
   dirLabel.textContent = {
@@ -612,25 +597,21 @@ function setLevel(lv, msg, dir) {
   }[dir] || '';
   dirLabel.style.color = L.color;
 
-  // Threat bar
   threatBar.style.height  = L.pct + '%';
   threatBar.style.background = L.color;
   threatBar.style.boxShadow  = `0 0 8px ${L.color}`;
   threatPct.textContent = L.pct + '%';
   threatPct.style.color = L.color;
 
-  // HUD brackets color
   document.querySelectorAll('.bracket').forEach(b => {
     b.style.borderColor = L.color;
   });
 
-  // Status badge
   statusBadge.textContent = '● ' + lv.toUpperCase();
   statusBadge.style.color = L.color;
   statusBadge.style.borderColor = L.color + '66';
   statusBadge.style.background = L.color + '22';
 
-  // Header background tint
   if (lv === 'stopp') {
     header.style.background = '#130005';
     header.style.borderBottomColor = L.color + '66';
@@ -642,7 +623,6 @@ function setLevel(lv, msg, dir) {
     header.style.borderBottomColor = '';
   }
 
-  // Danger flash + warn banner
   if (lv === 'stopp') {
     dangerFlash.classList.add('active');
     warnBanner.classList.add('visible');
@@ -709,7 +689,7 @@ function playAlert(lv) {
 
 /* ── UTILS ── */
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-  
+
 /* ── PiP (Picture-in-Picture) ── */
 const pipBtn = document.getElementById('pip-btn');
 const pipCanvas = document.createElement('canvas');
@@ -756,7 +736,7 @@ pipBtn.addEventListener('click', async () => {
 
       pipCtx.fillStyle = 'rgba(0,0,0,0.7)';
       pipCtx.fillRect(90, 4, 140, 24);
-      pipCtx.font = 'bold 14px Orbitron, monospace';
+      pipCtx.font = 'bold 14px monospace';
       pipCtx.fillStyle = c;
       pipCtx.textAlign = 'center';
       pipCtx.fillText(lastLevel.toUpperCase(), 160, 21);
@@ -764,7 +744,7 @@ pipBtn.addEventListener('click', async () => {
       if (lastLevel !== 'frei') {
         pipCtx.fillStyle = 'rgba(0,0,0,0.8)';
         pipCtx.fillRect(0, 200, 320, 40);
-        pipCtx.font = '12px DM Sans, sans-serif';
+        pipCtx.font = '12px sans-serif';
         pipCtx.fillStyle = c;
         pipCtx.textAlign = 'center';
         const msg = document.getElementById('detection-msg').textContent;
@@ -800,7 +780,6 @@ document.addEventListener('leavepictureinpicture', () => {
   pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
   pipBtn.style.color = '#606470';
 });
-
-</script>
+&lt;/script>
 </body>
 </html>
