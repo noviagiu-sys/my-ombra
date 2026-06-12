@@ -209,6 +209,58 @@ input { outline: none; font-family: var(--mono); }
 .level-sicher { --hud-color: var(--green); }
 .level-achtung { --hud-color: var(--warn); }
 .level-stopp { --hud-color: var(--red); }
+#plugin-btn {
+  padding: 7px 12px; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--muted); font-size: 11px; font-family: var(--mono);
+  transition: all .3s; white-space: nowrap;
+}
+#plugin-btn.has-plugins { border-color: var(--cyan); color: var(--cyan); }
+#plugin-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.80); backdrop-filter: blur(4px);
+  align-items: flex-end; justify-content: center;
+}
+#plugin-overlay.visible { display: flex; }
+#plugin-panel {
+  width: 100%; max-width: 430px;
+  background: #07080F; border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  max-height: 78vh; display: flex; flex-direction: column;
+}
+#plugin-panel-hdr {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 18px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+#plugin-panel-title {
+  font-family: var(--font); font-size: 11px; letter-spacing: 3px; color: var(--cyan);
+}
+#plugin-close-btn {
+  padding: 4px 10px; background: transparent;
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--muted); font-size: 11px; font-family: var(--mono); cursor: pointer;
+}
+#plugin-output {
+  flex: 1; overflow-y: auto; padding: 10px 16px;
+  font-family: var(--mono); font-size: 11px; line-height: 1.75;
+  min-height: 100px;
+}
+.pl { display: block; }
+.pl.cmd { color: var(--cyan); }
+.pl.ok  { color: var(--green); }
+.pl.err { color: var(--red); }
+.pl.inf { color: var(--muted); }
+.pl.wrn { color: var(--warn); }
+#plugin-input-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px 22px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+#plugin-prompt { font-family: var(--mono); font-size: 13px; color: var(--cyan); flex-shrink: 0; }
+#plugin-input {
+  flex: 1; background: transparent; border: none;
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  caret-color: var(--cyan);
+}
 </style>
 </head>
 <body>
@@ -262,6 +314,7 @@ input { outline: none; font-family: var(--mono); }
       <button class="sens-btn" data-s="6000">6s</button>
       <button id="cam-flip-btn" title="Kamera wechseln">&#x1F504;</button>
       <button id="pip-btn" title="Picture-in-Picture">&#x1FA9F; PiP</button>
+      <button id="plugin-btn" title="Plugin Terminal">&#x2B21; PLUG</button>
     </div>
     <div id="key-row" style="margin-bottom:12px">
       <input id="key-input" type="password" placeholder="sk-ant-api03-... (Anthropic Key)"/>
@@ -271,6 +324,21 @@ input { outline: none; font-family: var(--mono); }
     <button id="main-btn">SCHUTZ AKTIVIEREN</button>
   </div>
 </div>
+
+<div id="plugin-overlay">
+  <div id="plugin-panel">
+    <div id="plugin-panel-hdr">
+      <span id="plugin-panel-title">PLUGIN TERMINAL</span>
+      <button id="plugin-close-btn">&#x2715; CLOSE</button>
+    </div>
+    <div id="plugin-output"></div>
+    <div id="plugin-input-row">
+      <span id="plugin-prompt">&#x203A;</span>
+      <input id="plugin-input" type="text" placeholder="marketplace add &lt;url&gt; | install &lt;name&gt;@&lt;reg&gt;" autocomplete="off" spellcheck="false"/>
+    </div>
+  </div>
+</div>
+
 <script>
 var active = false;
 var stream = null;
@@ -676,6 +744,213 @@ document.addEventListener('leavepictureinpicture', function() {
   pipBtn.style.borderColor = 'rgba(255,255,255,0.10)';
   pipBtn.style.color = '#606470';
 });
+
+// ── Plugin System ──────────────────────────────────────────────────────────
+var pluginMarket = JSON.parse(localStorage.getItem('ombra_market') || '[]');
+var pluginInstalled = JSON.parse(localStorage.getItem('ombra_plugins') || '[]');
+var pluginHooks = { onAnalysis: [], onLevel: [] };
+
+var pluginOverlay = document.getElementById('plugin-overlay');
+var pluginOutput  = document.getElementById('plugin-output');
+var pluginInputEl = document.getElementById('plugin-input');
+var pluginBtnEl   = document.getElementById('plugin-btn');
+
+function saveMarket() { localStorage.setItem('ombra_market', JSON.stringify(pluginMarket)); }
+function savePInstalled() { localStorage.setItem('ombra_plugins', JSON.stringify(pluginInstalled)); }
+
+function pPrint(msg, cls) {
+  var s = document.createElement('span');
+  s.className = 'pl ' + (cls || 'inf');
+  s.textContent = msg;
+  pluginOutput.appendChild(s);
+  pluginOutput.scrollTop = pluginOutput.scrollHeight;
+}
+
+function showPluginPanel() {
+  pluginOverlay.classList.add('visible');
+  if (pluginOutput.children.length === 0) {
+    pPrint('OMBRA PLUGIN TERMINAL v1.0', 'ok');
+    pPrint('Commands: marketplace add <url>  |  install <n>@<reg>  |  list  |  help', 'inf');
+    pPrint('', 'inf');
+    if (pluginInstalled.length) {
+      pPrint('Active: ' + pluginInstalled.map(function(p){return p.id;}).join(', '), 'ok');
+    }
+  }
+  setTimeout(function(){ pluginInputEl.focus(); }, 80);
+}
+
+function hidePluginPanel() { pluginOverlay.classList.remove('visible'); }
+
+pluginBtnEl.addEventListener('click', showPluginPanel);
+document.getElementById('plugin-close-btn').addEventListener('click', hidePluginPanel);
+pluginOverlay.addEventListener('click', function(e){ if (e.target === pluginOverlay) hidePluginPanel(); });
+
+function parseGHUrl(url) {
+  var m = url.match(/github\.com\/([^\/\s]+)\/([^\/\s#?]+)/);
+  if (!m) return null;
+  return { owner: m[1], repo: m[2].replace(/\.git$/, '') };
+}
+
+function marketById(id) {
+  return pluginMarket.find(function(e){ return e.id === id.toLowerCase(); });
+}
+
+function installedById(id) {
+  return pluginInstalled.find(function(p){ return p.id === id.toLowerCase(); });
+}
+
+async function cmdMarketAdd(url) {
+  pPrint('› marketplace add ' + url, 'cmd');
+  var gh = parseGHUrl(url);
+  if (!gh) { pPrint('✗ Invalid GitHub URL', 'err'); return; }
+  var id = gh.repo.toLowerCase();
+  if (marketById(id)) { pPrint('⚠ Already in marketplace: ' + id, 'wrn'); return; }
+  pluginMarket.push({ id: id, name: gh.repo, owner: gh.owner, repo: gh.repo, url: url, added: Date.now() });
+  saveMarket();
+  pPrint('✓ Added to marketplace: ' + gh.repo + ' [id: ' + id + ']', 'ok');
+  pPrint('  Source: ' + url, 'inf');
+}
+
+async function cmdInstall(spec) {
+  pPrint('› install ' + spec, 'cmd');
+  var parts = spec.split('@');
+  var pid  = parts[0].trim().toLowerCase();
+  var regId = (parts[1] || parts[0]).trim().toLowerCase();
+
+  var entry = marketById(regId);
+  if (!entry) {
+    pPrint('✗ Marketplace entry not found: ' + regId, 'err');
+    pPrint('  Hint: run  marketplace add <github-url>  first', 'inf');
+    return;
+  }
+  if (installedById(pid)) { pPrint('⚠ Already installed: ' + pid, 'wrn'); return; }
+
+  pPrint('⟳ Fetching plugin from ' + entry.owner + '/' + entry.repo + '…', 'inf');
+
+  var candidates = ['ombra-plugin.js', 'plugin.js', 'index.js', 'main.js'];
+  var branches   = ['main', 'master'];
+  var code = null, srcFile = null;
+
+  outer:
+  for (var bi = 0; bi < branches.length; bi++) {
+    var base = 'https://raw.githubusercontent.com/' + entry.owner + '/' + entry.repo + '/' + branches[bi] + '/';
+    for (var ci = 0; ci < candidates.length; ci++) {
+      try {
+        var r = await fetch(base + candidates[ci]);
+        if (r.ok) { code = await r.text(); srcFile = candidates[ci]; break outer; }
+      } catch(e) {}
+    }
+  }
+
+  if (!code) {
+    pPrint('✗ No plugin file found in repository', 'err');
+    pPrint('  Tried: ' + candidates.join(', ') + ' on branches main/master', 'inf');
+    pPrint('  Ensure the repo is public and has a plugin entry point', 'inf');
+    return;
+  }
+
+  pPrint('✓ Fetched ' + srcFile + ' (' + code.length + ' bytes)', 'ok');
+
+  var api = {
+    version: '1.0',
+    pluginId: pid,
+    onAnalysis: function(cb){ pluginHooks.onAnalysis.push(cb); },
+    onLevel:    function(cb){ pluginHooks.onLevel.push(cb); },
+    print: function(msg){ pPrint('[' + pid + '] ' + msg, 'inf'); },
+    log:   function(lv, msg, dir){ addLog(lv, msg, dir); },
+    getLevel: function(){ return lastLevel; }
+  };
+
+  try {
+    (new Function('OmbraAPI', code))(api);
+    pluginInstalled.push({ id: pid, registry: regId, file: srcFile, installed: Date.now() });
+    savePInstalled();
+    pluginBtnEl.classList.add('has-plugins');
+    pPrint('✓ Plugin installed: ' + pid, 'ok');
+  } catch(e) {
+    pPrint('✗ Plugin runtime error: ' + e.message, 'err');
+  }
+}
+
+function cmdList() {
+  pPrint('› list', 'cmd');
+  if (pluginInstalled.length) {
+    pPrint('Installed (' + pluginInstalled.length + '):', 'ok');
+    pluginInstalled.forEach(function(p){
+      pPrint('  • ' + p.id + '  ← ' + p.registry + '  [' + p.file + ']', 'inf');
+    });
+  } else { pPrint('No plugins installed.', 'inf'); }
+  if (pluginMarket.length) {
+    pPrint('Marketplace (' + pluginMarket.length + '):', 'ok');
+    pluginMarket.forEach(function(e){
+      pPrint('  • ' + e.id + '  →  ' + e.url, 'inf');
+    });
+  } else { pPrint('Marketplace is empty.', 'inf'); }
+}
+
+function cmdHelp() {
+  pPrint('Available commands:', 'ok');
+  pPrint('  marketplace add <url>       Add GitHub repo to marketplace', 'inf');
+  pPrint('  marketplace list            List marketplace entries', 'inf');
+  pPrint('  marketplace remove <id>     Remove from marketplace', 'inf');
+  pPrint('  install <name>@<registry>   Fetch & install plugin', 'inf');
+  pPrint('  uninstall <name>            Remove installed plugin', 'inf');
+  pPrint('  list                        Show all plugins & marketplace', 'inf');
+  pPrint('  clear                       Clear terminal output', 'inf');
+}
+
+async function runCmd(raw) {
+  var cmd = raw.trim();
+  if (!cmd) return;
+  if (cmd === 'help') { cmdHelp(); }
+  else if (cmd === 'list') { cmdList(); }
+  else if (cmd === 'clear') { pluginOutput.innerHTML = ''; }
+  else if (cmd.startsWith('marketplace add ')) {
+    await cmdMarketAdd(cmd.slice(16).trim());
+  } else if (cmd === 'marketplace list') {
+    if (!pluginMarket.length) { pPrint('Marketplace is empty.', 'inf'); }
+    else pluginMarket.forEach(function(e){ pPrint('• ' + e.id + ': ' + e.url, 'inf'); });
+  } else if (cmd.startsWith('marketplace remove ')) {
+    var rid = cmd.slice(19).trim().toLowerCase();
+    var ri = pluginMarket.findIndex(function(e){ return e.id === rid; });
+    if (ri >= 0) { pluginMarket.splice(ri, 1); saveMarket(); pPrint('✓ Removed: ' + rid, 'ok'); }
+    else pPrint('✗ Not found: ' + rid, 'err');
+  } else if (cmd.startsWith('install ')) {
+    await cmdInstall(cmd.slice(8).trim());
+  } else if (cmd.startsWith('uninstall ')) {
+    var uid = cmd.slice(10).trim().toLowerCase();
+    var ui = pluginInstalled.findIndex(function(p){ return p.id === uid; });
+    if (ui >= 0) { pluginInstalled.splice(ui, 1); savePInstalled(); pPrint('✓ Uninstalled: ' + uid, 'ok'); }
+    else pPrint('✗ Not found: ' + uid, 'err');
+    if (!pluginInstalled.length) pluginBtnEl.classList.remove('has-plugins');
+  } else {
+    pPrint('✗ Unknown: ' + cmd, 'err');
+    pPrint('  Type "help" for commands', 'inf');
+  }
+}
+
+pluginInputEl.addEventListener('keydown', async function(e) {
+  if (e.key === 'Enter') {
+    var v = pluginInputEl.value;
+    pluginInputEl.value = '';
+    await runCmd(v);
+  }
+});
+
+if (pluginInstalled.length) pluginBtnEl.classList.add('has-plugins');
+
+// Hook applyResult and setLevel for plugin callbacks
+var _applyResult0 = applyResult;
+applyResult = function(r) {
+  _applyResult0(r);
+  pluginHooks.onAnalysis.forEach(function(cb){ try{ cb(r); }catch(e){} });
+};
+
+var _setLevel0 = setLevel;
+setLevel = function(lv, msg, dir) {
+  _setLevel0(lv, msg, dir);
+  pluginHooks.onLevel.forEach(function(cb){ try{ cb(lv, msg, dir); }catch(e){} });
+};
 </script>
 </body>
 </html>
