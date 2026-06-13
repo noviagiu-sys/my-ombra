@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "ecc.install.v1",
+  "installedAt": "2026-06-13T07:26:13.905Z",
+  "target": {
+    "id": "claude-project",
+    "target": "claude-project",
+    "kind": "project",
+    "root": "/home/user/my-ombra/.claude",
+    "installStatePath": "/home/user/my-ombra/.claude/ecc/install-state.json"
+  },
+  "request": {
+    "profile": null,
+    "modules": [
+      "skill-accessibility",
+      "skill-error-handling"
+    ],
+    "includeComponents": [],
+    "excludeComponents": [],
+    "legacyLanguages": [],
+    "legacyMode": false
+  },
+  "resolution": {
+    "selectedModules": [
+      "skill-accessibility",
+      "skill-error-handling"
+    ],
+    "skippedModules": []
+  },
+  "source": {
+    "repoVersion": "2.0.0",
+    "repoCommit": "5b173d2e6c11b976a0f13b2f59125e08956c1d47",
+    "manifestVersion": 1
+  },
+  "operations": [
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-accessibility",
+      "sourcePath": "/root/.claude/plugins/marketplaces/ecc/skills/accessibility/SKILL.md",
+      "sourceRelativePath": "skills/accessibility/SKILL.md",
+      "destinationPath": "/home/user/my-ombra/.claude/skills/ecc/accessibility/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-error-handling",
+      "sourcePath": "/root/.claude/plugins/marketplaces/ecc/skills/error-handling/SKILL.md",
+      "sourceRelativePath": "skills/error-handling/SKILL.md",
+      "destinationPath": "/home/user/my-ombra/.claude/skills/ecc/error-handling/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false
+    }
+  ]
+}
