@@ -10,15 +10,16 @@
   }
   const TRAYS = CFG.trays;
 
-  /* ---- aktueller Träger ---- */
   let tray = TRAYS[0], POS = tray.pos, PARTS = tray.parts, N = PARTS.length;
   let mode = 'guided';
   const placed = new Set();
   let active = null;
   const byOrder = o => PARTS.find(p => p.order === o);
 
-  /* ---- Trägerzeichnung ---- */
   const traySvg = el('tray');
+  const overlaySvg = el('overlay');
+
+  /* ---- Aussparungs-Rahmen ---- */
   function frame(p){
     const {cx,cy,shape,w,h}=p, x=cx-w/2, y=cy-h/2, rx=w/2;
     if(shape==='oval') return `<ellipse class="cut-frame" cx="${cx}" cy="${cy}" rx="${w/2}" ry="${h/2}"/>`;
@@ -31,7 +32,7 @@
     const x=cx-w/2-pad, y=cy-h/2-pad;
     return `<rect class="halo" x="${x}" y="${y}" width="${w+pad*2}" height="${h+pad*2}" rx="${(w/2)+pad}"/>`;
   }
-  // Instrument-Silhouette (liegt vertikal in der Aussparung)
+  // Silhouette je Teil. Chirurgie: vertikal in der Aussparung; Haushalt: zentriertes Symbol.
   function instr(part){
     const p=POS[part.pos]; if(!p) return '';
     const t=part.type, cx=p.cx, cy=p.cy; let d='';
@@ -53,32 +54,54 @@
     } else if(t==='hook'){
       d+=`<circle cx="${cx}" cy="${cy+9}" r="5"/><path d="M${cx} ${cy+4} L${cx} ${cy-8}"/>`;
       d+=`<path d="M${cx} ${cy-8} Q${cx+11} ${cy-13} ${cx+8} ${cy-2}"/><path d="M${cx} ${cy-8} Q${cx-11} ${cy-13} ${cx-8} ${cy-2}"/>`;
-    } else if(t==='rod'){ // Trokar / Applikator: Rohr mit Ventilknopf
+    } else if(t==='rod'){
       d+=`<rect x="${cx-3}" y="${top}" width="6" height="${bot-top}" rx="3"/>`;
-      d+=`<circle cx="${cx}" cy="${bot-5}" r="4.5"/>`;
-      d+=`<rect x="${cx+3}" y="${cy-5}" width="7" height="9" rx="2"/>`;
+      d+=`<circle cx="${cx}" cy="${bot-5}" r="4.5"/><rect x="${cx+3}" y="${cy-5}" width="7" height="9" rx="2"/>`;
+    }
+    /* ---- Haushalt / Spülmaschine ---- */
+    else if(t==='plate'){ d+=`<circle cx="${cx}" cy="${cy}" r="25"/><circle cx="${cx}" cy="${cy}" r="16"/>`;
+    } else if(t==='pot'){ d+=`<rect x="${cx-23}" y="${cy-14}" width="46" height="34" rx="5"/>`;
+      d+=`<path d="M${cx-23} ${cy-6} q-8 0 -8 7 q0 6 8 6"/><path d="M${cx+23} ${cy-6} q8 0 8 7 q0 6 -8 6"/>`;
+      d+=`<line x1="${cx-25}" y1="${cy-14}" x2="${cx+25}" y2="${cy-14}"/>`;
+    } else if(t==='lid'){ d+=`<path d="M${cx-24} ${cy+8} A26 22 0 0 1 ${cx+24} ${cy+8}"/><line x1="${cx-26}" y1="${cy+8}" x2="${cx+26}" y2="${cy+8}"/>`;
+      d+=`<line x1="${cx}" y1="${cy-15}" x2="${cx}" y2="${cy-8}"/><circle cx="${cx}" cy="${cy-18}" r="4"/>`;
+    } else if(t==='pan'){ d+=`<circle cx="${cx-6}" cy="${cy}" r="19"/><rect x="${cx+13}" y="${cy-3.5}" width="26" height="7" rx="3.5"/>`;
+    } else if(t==='bowl'){ d+=`<path d="M${cx-24} ${cy-4} A24 20 0 0 0 ${cx+24} ${cy-4}"/><line x1="${cx-26}" y1="${cy-4}" x2="${cx+26}" y2="${cy-4}"/>`;
+    } else if(t==='cup'){ d+=`<path d="M${cx-12} ${cy-14} L${cx-12} ${cy+13} Q${cx-12} ${cy+18} ${cx-7} ${cy+18} L${cx+7} ${cy+18} Q${cx+12} ${cy+18} ${cx+12} ${cy+13} L${cx+12} ${cy-14}"/>`;
+      d+=`<path d="M${cx+12} ${cy-8} q11 0 11 10 q0 9 -11 9"/>`;
+    } else if(t==='glass'){ d+=`<path d="M${cx-11} ${cy-18} L${cx+11} ${cy-18} L${cx+8} ${cy+18} L${cx-8} ${cy+18} Z"/>`;
+    } else if(t==='cutlery'){ d+=`<line x1="${cx-9}" y1="${cy-18}" x2="${cx-9}" y2="${cy+18}"/>`;
+      d+=`<line x1="${cx-13}" y1="${cy-18}" x2="${cx-13}" y2="${cy-9}"/><line x1="${cx-5}" y1="${cy-18}" x2="${cx-5}" y2="${cy-9}"/>`;
+      d+=`<line x1="${cx+8}" y1="${cy-18}" x2="${cx+8}" y2="${cy+18}"/><path d="M${cx+8} ${cy-18} q7 2 7 10 q0 6 -7 6"/>`;
     }
     return `<g class="instr">${d}</g>`;
   }
-  function buildTray(){
-    let s = `<rect x="8" y="8" width="284" height="384" rx="18" fill="var(--tray)" stroke="var(--tray-line)" stroke-width="2"/>`;
+  function trayHTML(prefix){
+    let s = `<rect class="trbg" x="8" y="8" width="284" height="384" rx="18" fill="var(--tray)" stroke="var(--tray-line)" stroke-width="2"/>`;
     s += `<path d="M8 34 L34 8" stroke="var(--tray-line)" stroke-width="2" fill="none"/>`;
-    s += `<text x="150" y="30" text-anchor="middle" fill="var(--muted)" font-family="var(--mono)" font-size="10" letter-spacing="1">WASCHGUTTRÄGER</text>`;
+    s += `<text x="150" y="30" text-anchor="middle" fill="var(--muted)" font-family="var(--mono)" font-size="10" letter-spacing="1">${tray.name.toUpperCase()}</text>`;
     for(const part of PARTS){
       const p = POS[part.pos]; if(!p) continue;
-      s += `<g class="cut" id="cut-${part.pos}" data-code="${part.code}">`+
+      s += `<g class="cut" id="${prefix}${part.pos}" data-code="${part.code}">`+
            haloShape(p)+ frame(p)+ instr(part)+
            `<text class="cut-lbl" x="${p.cx}" y="${p.cy+p.h/2+13}" text-anchor="middle">${part.pos}</text></g>`;
     }
-    traySvg.innerHTML = s;
+    return s;
   }
+  function buildTray(){
+    traySvg.innerHTML = trayHTML('cut-');
+    if(overlaySvg) overlaySvg.innerHTML = trayHTML('ov-');
+  }
+  const PREFIXES = ['cut-','ov-'];
   function paintTray(){
     const nextCode = mode==='guided' ? (byOrder(placed.size+1)||{}).code : null;
     for(const part of PARTS){
-      const g = el('cut-'+part.pos); if(!g) continue;
-      g.classList.toggle('done', placed.has(part.code));
-      g.classList.toggle('active', active===part.code);
-      g.classList.toggle('next', part.code===nextCode && active!==part.code);
+      for(const pf of PREFIXES){
+        const g = el(pf+part.pos); if(!g) continue;
+        g.classList.toggle('done', placed.has(part.code));
+        g.classList.toggle('active', active===part.code);
+        g.classList.toggle('next', part.code===nextCode && active!==part.code);
+      }
     }
   }
 
@@ -95,7 +118,7 @@
       const nx = byOrder(placed.size+1);
       if(nx){ el('nowlbl').textContent = `Nächster Schritt · ${placed.size+1}/${N}`; el('nowpart').textContent = nx.name;
         el('nowmeta').innerHTML = `Einlegen in Position <b>${nx.pos}</b> — dann Code scannen.`;
-      } else { el('nowlbl').textContent = 'Fertig'; el('nowpart').textContent = 'Träger vollständig bestückt ✓'; el('nowmeta').textContent = 'Alle Instrumente sind an ihrer Position.'; }
+      } else { el('nowlbl').textContent = 'Fertig'; el('nowpart').textContent = 'Träger vollständig bestückt ✓'; el('nowmeta').textContent = 'Alle Teile sind an ihrer Position.'; }
     } else { el('nowlbl').textContent = 'Bereit zum Scannen'; el('nowpart').textContent = '— Kein Teil erkannt —'; el('nowmeta').textContent = 'Scanne einen QR-Code oder tippe unten ein Demo-Teil an.'; }
     const rail=el('rail'); rail.innerHTML='';
     for(let i=1;i<=N;i++){ const sp=document.createElement('span');
@@ -154,9 +177,50 @@
     tray=TRAYS[idx]; POS=tray.pos; PARTS=tray.parts; N=PARTS.length;
     placed.clear(); active=null; lastCode='';
     el('setnote').textContent = tray.note || '';
-    setBanner('',''); buildTray(); renderRef(); renderAll();
+    setBanner('',''); buildTray(); renderRef(); renderAll(); resetLabels();
   }
   function setMode(m){ mode=m; active=null; el('m-guided').setAttribute('aria-pressed',m==='guided'); el('m-free').setAttribute('aria-pressed',m==='free'); setBanner('',''); renderAll(); }
+
+  /* ---- QR-Etiketten ---- */
+  let qrLib = null, qrTried = false;
+  function loadQRLib(){
+    return new Promise(res=>{
+      if(window.qrcode) return res(window.qrcode);
+      if(qrTried) return res(window.qrcode||null);
+      qrTried = true;
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+      s.onload=()=>res(window.qrcode||null); s.onerror=()=>res(null);
+      document.head.appendChild(s);
+    });
+  }
+  function resetLabels(){ const g=el('labelsgrid'); if(g) g.innerHTML=''; const pb=el('printlabels'); if(pb) pb.style.display='none'; const h=el('labelshint'); if(h) h.textContent=''; }
+  async function genLabels(){
+    const grid=el('labelsgrid'), hint=el('labelshint'); if(!grid) return;
+    hint.textContent='QR-Codes werden erzeugt…';
+    qrLib = qrLib || await loadQRLib();
+    grid.innerHTML='';
+    for(const p of [...PARTS].sort((a,b)=>a.order-b.order)){
+      const card=document.createElement('div'); card.className='lblcard';
+      let qrHTML='';
+      if(qrLib){
+        try{ const qr=qrLib(0,'M'); qr.addData(p.code); qr.make(); qrHTML=qr.createSvgTag({cellSize:4, margin:2, scalable:true}); }
+        catch(e){ qrHTML='<div class="qrfail">'+p.code+'</div>'; }
+      } else {
+        qrHTML='<div class="qrfail">QR nur online<br>'+p.code+'</div>';
+      }
+      card.innerHTML=`<div class="qrbox">${qrHTML}</div><div class="lblname">${p.name}</div><div class="lblcode">${p.code}</div>`;
+      grid.appendChild(card);
+    }
+    hint.textContent = qrLib ? 'Zum Ausdrucken auf „Drucken“ tippen — jedes Etikett auf sein Teil kleben.'
+                             : 'QR-Bibliothek nicht geladen (offline?). In der gehosteten Version werden die Codes als QR erzeugt.';
+    el('printlabels').style.display = qrLib ? 'inline-flex' : 'none';
+  }
+
+  /* ---- Overlay ein/aus ---- */
+  let overlayOn=false;
+  function setOverlay(on){ overlayOn=on; if(overlaySvg) overlaySvg.style.display=on?'block':'none';
+    el('ovbtn').setAttribute('aria-pressed', on); el('ovbtn').classList.toggle('accent', on); }
 
   /* ---- Bedienung ---- */
   const sel=el('trsel');
@@ -167,6 +231,9 @@
   el('resetbtn').onclick=()=>{ placed.clear(); active=null; lastCode=''; setBanner('',''); renderAll(); };
   el('manualbtn').onclick=()=>{ const v=el('manual').value; if(v.trim()){ handleScan(v); el('manual').value=''; } };
   el('manual').addEventListener('keydown',e=>{ if(e.key==='Enter') el('manualbtn').click(); });
+  el('genlabels').onclick=genLabels;
+  el('printlabels').onclick=()=>window.print();
+  el('ovbtn').onclick=()=>setOverlay(!overlayOn);
 
   /* ---- Kamera + QR ---- */
   const video=el('video'); let stream=null, running=false, detector=null, jsqrFn=null, raf=0;

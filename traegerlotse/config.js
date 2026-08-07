@@ -2,8 +2,7 @@
    Trägerlotse — KONFIGURATION
    ---------------------------------------------------------------------
    Dies ist die EINZIGE Datei, die du anpassen musst, um echte Träger,
-   Aussparungen und Instrumente einzutragen. Nur Werte ändern — kein
-   sonstiger Code nötig.
+   Aussparungen und Instrumente einzutragen. Nur Werte ändern.
 
    Ein Träger = { id, name, note, pos:{…}, parts:[…] }
 
@@ -13,24 +12,51 @@
         shape  : "slot" | "thin" | "bracket" | "oval"
 
      parts[]    = { code, name, short, pos, order, type }
-        code   : QR-Inhalt = was auf dem Etikett steht (z. B. "KLE-KOC")
+        code   : QR-Inhalt = was auf dem Etikett steht (z. B. "TOPF")
         name   : voller Anzeigename
         short  : Kurzname für die Demo-Buttons
         pos    : Schlüssel aus pos{} oben (welche Aussparung)
         order  : Einlege-Reihenfolge (1, 2, 3, …)
-        type   : Silhouette des Instruments —
-                 "scis" | "sciscurve" | "clamp" | "needle" |
-                 "forceps" | "scalpel" | "hook" | "rod"
+        type   : Silhouette. Haushalt (Test):
+                   "plate" | "pot" | "lid" | "pan" | "bowl" | "cup" |
+                   "glass" | "cutlery"
+                 Chirurgie:
+                   "scis" | "sciscurve" | "clamp" | "needle" |
+                   "forceps" | "scalpel" | "hook" | "rod"
 
    ---------------------------------------------------------------------
-   DATENSCHUTZ / IP: Alle Werte hier sind FIKTIV (Demo). Echte, evtl.
-   vertrauliche Firmendaten trägst du ausschließlich in DIESER Datei auf
-   deinem eigenen Rechner/Replit ein — sie werden nirgendwo hochgeladen.
+   DATENSCHUTZ / IP: Alle Werte hier sind FIKTIV / neutral (Demo & Test).
+   Echte, evtl. vertrauliche Firmendaten trägst du ausschließlich in
+   DIESER Datei auf deinem eigenen Rechner/Replit ein — sie werden
+   nirgendwo hochgeladen.
    ===================================================================== */
 window.TRAEGER = {
   trays: [
 
-    /* ---------- Träger 1 ---------- */
+    /* ---------- TEST-Träger: Spülmaschine (Haushalt, völlig neutral) ---------- */
+    {
+      id: "spuelmaschine",
+      name: "Spülmaschine (Test)",
+      note: "Neutraler Test · Haushaltsgeschirr",
+      pos: {
+        A1:{cx:75, cy:98, shape:"bracket",w:74,h:92}, B1:{cx:150,cy:98, shape:"bracket",w:74,h:92}, C1:{cx:225,cy:98, shape:"bracket",w:74,h:92},
+        A2:{cx:75, cy:208,shape:"bracket",w:74,h:92}, B2:{cx:150,cy:208,shape:"bracket",w:74,h:92}, C2:{cx:225,cy:208,shape:"bracket",w:74,h:92},
+        A3:{cx:75, cy:318,shape:"bracket",w:74,h:92}, B3:{cx:150,cy:318,shape:"bracket",w:74,h:92}, C3:{cx:225,cy:318,shape:"bracket",w:74,h:92},
+      },
+      parts: [
+        {code:"TOPF",      name:"Topf",         short:"Topf",       pos:"A2", order:1, type:"pot"},
+        {code:"PFANNE",    name:"Pfanne",       short:"Pfanne",     pos:"B2", order:2, type:"pan"},
+        {code:"SCHUESSEL", name:"Schüssel",     short:"Schüssel",   pos:"C2", order:3, type:"bowl"},
+        {code:"TELLER-GR", name:"Teller groß",  short:"Teller gr.", pos:"A1", order:4, type:"plate"},
+        {code:"TELLER-KL", name:"Teller klein", short:"Teller kl.", pos:"B1", order:5, type:"plate"},
+        {code:"DECKEL",    name:"Deckel",       short:"Deckel",     pos:"C1", order:6, type:"lid"},
+        {code:"TASSE",     name:"Tasse",        short:"Tasse",      pos:"A3", order:7, type:"cup"},
+        {code:"GLAS",      name:"Glas",         short:"Glas",       pos:"B3", order:8, type:"glass"},
+        {code:"BESTECK",   name:"Besteck",      short:"Besteck",    pos:"C3", order:9, type:"cutlery"},
+      ],
+    },
+
+    /* ---------- Träger: Grundsieb Chirurgie (fiktiv) ---------- */
     {
       id: "grundsieb",
       name: "Grundsieb Chirurgie",
@@ -53,7 +79,7 @@ window.TRAEGER = {
       ],
     },
 
-    /* ---------- Träger 2 ---------- */
+    /* ---------- Träger: Sieb Laparoskopie (fiktiv) ---------- */
     {
       id: "lap",
       name: "Sieb Laparoskopie",
