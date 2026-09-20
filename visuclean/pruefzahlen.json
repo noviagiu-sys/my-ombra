@@ -1,0 +1,32 @@
+{
+  "hinweis": "Gemessen von scripts/pruefzahlen.mjs. Nicht von Hand pflegen — MANIFEST.txt wird aus dieser Datei gerendert.",
+  "suiten": {
+    "coretest.mjs": 16,
+    "realimagetest.mjs": 5,
+    "enginetest.mjs": 5,
+    "kitest.mjs": 30,
+    "v82test.mjs": 43,
+    "persisttest.mjs": 18,
+    "uitest.mjs": 31,
+    "a11ytest.mjs": 8,
+    "assessmenttest.mjs": 34,
+    "scratchtest.mjs": 15,
+    "aitest.mjs": 15,
+    "integrationtest.mjs": 16,
+    "versiontest.mjs": 13,
+    "rc4gegenproben.mjs": 33,
+    "roitest.mjs": 8,
+    "ausschlusstest.mjs": 16,
+    "speicherpfadtest.mjs": 49,
+    "pdftest.mjs": 22,
+    "kalibrierung.mjs": 7,
+    "screeningtest.mjs": 27,
+    "mehrwinkeltest.mjs": 19,
+    "screeninganzeigetest.mjs": 35,
+    "sequenztest.mjs": 14,
+    "tiefentest.mjs": 30,
+    "schmutztest.mjs": 32,
+    "pruefflaechetest.mjs": 35,
+    "schadenstest.mjs": 66
+  }
+}

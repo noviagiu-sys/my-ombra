@@ -1,0 +1,10 @@
+{
+  "note": "Stellwerte des Kratzer-Screenings. NICHT validierte Schwellenwerte. Sie steuern die Aufmerksamkeit (welche Kandidaten oben stehen), nicht die Richtigkeit: das Screening fuegt nur hinzu und sortiert, es kann kein Urteil aendern und kein PASS erzeugen. Aenderungen hier brauchen deshalb keine Neufreigabe des Urteils. Unplausible Werte werden einzeln verworfen, der Standard greift, und der Grund wird vermerkt.",
+  "edgeThreshold": 0.18,
+  "tileSize": 32,
+  "minComponentPixels": 12,
+  "grindToleranceDeg": 15,
+  "slenderReference": 4,
+  "maxDimension": 1024,
+  "orientationBins": 36
+}

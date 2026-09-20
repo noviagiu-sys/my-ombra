@@ -1,0 +1,123 @@
+VisuClean RC4 · Rote Gegenproben gegen den RC3-Stand
+==============================================================================
+
+Jeder Eintrag ist ein Mangel, den RC4 beheben soll. ROT heisst:
+am unveraenderten RC3-Code reproduziert.
+
+ROT                T-G1..G4       Es gibt keine Zustandsmaschine
+                                  src/lifecycle.js existiert nicht; RC3 kennt nur finalDecision
+                                  PASS/FAIL/OVERRIDE ohne Zustaende, ohne Uebergangstabelle und ohne
+                                  Sperrwirkung
+
+ROT                T-G1           PENDING_QA und PASS_AFTER_REMEDIATION existieren nicht
+                                  kein Bezeichner PASS_AFTER_REMEDIATION im gesamten Quellcode
+
+ROT                T-G4           NOT_VERIFIED ist kein erreichbarer Zustand
+                                  kein Bezeichner NOT_VERIFIED im gesamten Quellcode
+
+ROT                T-11 / T-38    performedBy und approvedBy werden nicht getrennt gefuehrt
+                                  kein Bezeichner approvedBy; RC3 kennt nur einen Unterzeichner
+                                  (record.user)
+
+ROT                T-B4           Kein exakter Rollenvergleich fuer die Endfreigabe
+                                  saveInspection prueft ueberhaupt keine Rolle: der Rumpf enthaelt das
+                                  Wort "role" nicht ein einziges Mal. Jede angemeldete Rolle darf einen
+                                  finalen PASS zeichnen. Rollenpruefungen gibt es nur in saveIssue und
+                                  saveReference.
+
+ROT                T-H2           Rohbefunde tragen keine Aufnahmemetadaten
+                                  weder Bildbreite/Bildhoehe noch Verarbeitungspfad werden im Befund
+                                  gespeichert
+
+ROT                T-H3           Kein Status fuer ein nicht freigegebenes Aufnahmeprofil
+                                  kein Bezeichner NOT_ASSESSABLE_UNSUPPORTED_CAPTURE_PROFILE
+
+ROT                T-H1           Kratzertor haengt an einem aufloesungsabhaengigen Merkmal
+                                  analysisCore.js tort die Kratzersuche mit edgeFrac < 0.06 && tvFlat <
+                                  0.035; Verkleinern glaettet die Textur, senkt tvFlat und oeffnet ein
+                                  Tor, das bei voller Aufloesung geschlossen war. RC3 weist das nicht als
+                                  offenen Kalibrierungsfall aus.
+
+ROT                T-12 / T-I2    Automatischer Kratzerbefund ohne Herkunftskennzeichnung
+                                  RC3 meldet SCRATCH_SUSPECT als FAIL, ohne auszuweisen, dass die Herkunft
+                                  (neu oder bestehend) nicht bestimmbar ist
+
+ROT                T-I2           Kratzeranzeige nennt keine unbestimmte Herkunft
+                                  buildCheckpoints liefert code=SCRATCH_SUSPECT, Text "Kratzer- /
+                                  Riefen-Verdacht" — keine Aussage zur Herkunft
+
+ROT                T-34           Numerische Tiefenangabe wird nicht speicherseitig abgewiesen
+                                  kein Bezeichner depthStatus/NOT_MEASURED; saveInspection kennt keine
+                                  Tiefenfelder
+
+ROT                T-I1           Manuelle Feststellung neuer/vergroesserter Kratzer existiert nicht
+                                  kein Bezeichner manualFinding; die einzige manuelle
+                                  Eingriffsmoeglichkeit ist applyManualSubstitute und die ersetzt nur
+                                  NOT_ASSESSABLE
+
+ROT                T-J2           RC3 behauptet automatisch „keine dunklen Flecken“
+                                  Prueftext bei unauffaelligem Bild: "Keine dunklen Flecken" — eine
+                                  positive Aussage ueber Abwesenheit, die der Algorithmus nicht belegen
+                                  kann
+
+ROT                T-J1           Korrosionsverdacht wird nicht als algorithmischer Verdacht benannt
+                                  assessment.js meldet „Dunkle Flecken / Korrosionsverdacht“ ohne den
+                                  Zusatz, dass es sich um einen rein algorithmischen Verdacht handelt
+
+ROT                T-J4           Bestaetigte Korrosion durch manuelle Sichtpruefung existiert nicht
+                                  kein Bezeichner CORROSION_CONFIRMED
+
+ROT                T-B6           Known Issues wirken automatisch, ohne QA-Manager-Zuordnung
+                                  applyKnownIssues liefert ohne jede manuelle Zuordnung
+                                  info.status="unveraendert" — die Tolerierung greift allein aus der
+                                  Positionsuebereinstimmung. Kein QA Manager war beteiligt.
+
+ROT                T-B3           Keine Regel gegen wiederverwendbare Vorabfreigabe
+                                  kein Bezeichner KNOWN_ISSUE_ACTIVE in der Qualitaetshistorie; ein
+                                  aktives Known Issue erzeugt keinen erneuten QA-Vorbehalt
+
+ROT                T-01           Kein PRECONDITION_NOT_MET fuer ungeeignete Aufnahmen
+                                  kein Bezeichner PRECONDITION_NOT_MET / ineligibleForQualityAssessment
+
+ROT                T-A1..A6       Handlungsarten Abwischen/Nachreinigen existieren nicht
+                                  keine der vier Handlungsarten ist im Code vorhanden; ein
+                                  Retake-Datensatz wird nirgends verlangt oder geprueft
+
+ROT                T-19 / T-20    Es gibt kein Schema 3 und keine Schemapruefung beim Schreiben
+                                  saveInspection kennt kein schemaVersion; ein Datensatz ohne
+                                  Pruefpunktlisten wird angenommen, solange Signatur und Hash stimmen
+
+ROT                T-21           Pruefpunktlisten werden speicherseitig nicht verlangt
+                                  keine Invariante in saveInspection prueft record.checkpoints auf
+                                  Existenz, Vollstaendigkeit oder Dubletten
+
+ROT                T-D2..D5       Kein finaler Integritaetsanker
+                                  die Audit-Kette kennt nur fortlaufende Ereignisse; ein fehlender,
+                                  doppelter oder auf die falsche Revision zeigender finaler Anker ist
+                                  nicht erkennbar
+
+ROT                T-D6           QA-Signaturen sind nicht an eine Datensatzrevision gebunden
+                                  kein Bezeichner recordRevision; eine Signatur eines anderen Datensatzes
+                                  kann nicht als solche erkannt werden
+
+ROT                T-C1..C6       Alt-Referenzen werden nicht als unvergleichbar markiert
+                                  kein Bezeichner LEGACY_NOT_COMPARABLE; eine RC2-Referenz ohne
+                                  frame/edgeFrac wird stillschweigend wie eine vollwertige Referenz
+                                  behandelt
+
+ROT                T-K1..K4       Es gibt keine KI-Vertragsschnittstelle
+                                  src/aiContract.js existiert nicht; es gibt keinen Ort, an dem Foto-ID,
+                                  Foto-Hash, Revision, Adapter- und Modellversion gebunden werden
+
+ROT                X-04           Algorithmische Befundstaerke wird als Prozentwert gefuehrt
+                                  domain.js rechnet in assessMarker severity = Math.round(fraction * 100)
+                                  und gibt damit einer rein algorithmischen Kennzahl die Anmutung einer
+                                  Messung
+
+==============================================================================
+Reproduzierte Maengel:      26
+Nicht reproduziert:         0
+
+ERGEBNIS: Alle erwarteten Maengel am RC3-Stand belegt.
+Diese Datei bleibt im Paket. Sie ist der Nachweis, dass die
+RC4-Reparaturen etwas reparieren, das nachweislich defekt war.

@@ -1,0 +1,6 @@
+teil_id,bild_id,befund_id,befundart,kontrast,kontrast_skala,bereich_quelle,flaeche_px
+T-101,B-1,F001,RIEFE,24.6,roh,DETEKTOR,812
+T-101,B-1,F002,RIEFE,8.2,roh,DETEKTOR,140
+T-102,B-2,F004,KRATER,19.9,roh,DETEKTOR,655
+T-102,B-2,F900,RIEFE,21.3,roh,DETEKTOR,301
+T-102,B-2,F005,RIEFE,11.0,roh,DETEKTOR,209
