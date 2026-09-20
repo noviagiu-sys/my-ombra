@@ -24,6 +24,14 @@ Zuletzt gearbeitet wurde ausschließlich an **VisuClean** (`visuclean/`).
    nicht durch Kopieren. Generierte Dateien aus diesem Stand neu erzeugt.
    Neu: `werkbank/kameralauf.mjs`.
 
+## Dokumentation / Agenten-Einstieg
+
+- `3c70f5f`: Arbeitsstand und gemeinsame Regeln in der Wurzel-CLAUDE.md.
+- Codex-Einstieg ergänzt: `AGENTS.md` verweist auf diesen Arbeitsstand,
+  die Wurzel-CLAUDE.md und bei VisuClean auf `visuclean/CLAUDE.md`.
+  Nur Dokumentation; Verweise und Diff geprüft, keine neuen App-Testläufe.
+  Der oben genannte geprüfte Anwendungsstand bleibt `b5a4a39`.
+
 ## Entscheidungen
 
 - Beide Reparaturen zuerst **rot** gefahren (F11/F14, U31,
