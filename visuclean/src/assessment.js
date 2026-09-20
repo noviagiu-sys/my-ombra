@@ -520,8 +520,34 @@ export function kriteriumStatus(checkpoints, kriterium) {
   const liste = Array.isArray(checkpoints) ? checkpoints : [];
   const passend = liste.filter(punkt => ids.includes(punkt?.id));
   if (!passend.length) return null;
-  return passend.reduce((schlimmster, punkt) =>
-    (RANG[punkt.status] ?? 0) > (RANG[schlimmster.status] ?? 0) ? punkt : schlimmster).status;
+  const schlimmster = passend.reduce((a, punkt) =>
+    (RANG[punkt.status] ?? 0) > (RANG[a.status] ?? 0) ? punkt : a).status;
+
+  /* BEFUND der unabhaengigen Gegenpruefung an rc.4.45, zutreffend:
+     bis hier endete die Ableitung an dieser Stelle — worst result wins
+     ueber die ANWESENDEN Punkte. Eine Liste mit nur `scratch: PASS` ergab
+     damit "Intakt: PASS", obwohl `corrosion` und `surface` fehlten.
+
+     Ein fehlender Pruefpunkt ist kein bestandener. Die Anwesenden sagen
+     nichts ueber die Abwesenden, und ein PASS aus Nichtwissen ist genau
+     der Fehler, den dieser Baustein seit RC3 verhindern soll.
+
+     Zwei Regeln, in dieser Reihenfolge:
+       1. FAIL behaelt Vorrang. Ein Befund darf nicht hinter einer Luecke
+          in ein weicheres "nicht bewertbar" rutschen — das waere die
+          Umkehrung von Regel 3.
+       2. Alles andere verlangt Vollstaendigkeit. Fehlt ein erforderlicher
+          Punkt, ist das Kriterium NICHT BEWERTBAR.
+
+     Die Grenze der Regel steht oben: liegt UEBERHAUPT KEIN passender
+     Punkt vor, wird weiter `null` gemeldet — also nichts behauptet. Das
+     ist der Altbestandsfall (F5/F9/F15); ihn mit der Luecke
+     gleichzusetzen wuerde historischen Datensaetzen ihre Aussage
+     nehmen. */
+  if (schlimmster === STATUS.FAIL) return STATUS.FAIL;
+  const fehlend = ids.filter(id => !passend.some(punkt => punkt?.id === id));
+  if (fehlend.length) return STATUS.NOT_ASSESSABLE;
+  return schlimmster;
 }
 
 /* ── Woran ein Altbestand erkannt wird ────────────────────────────────────

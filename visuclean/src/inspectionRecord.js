@@ -555,12 +555,37 @@ export function buildClarificationRecord({ pending, actor, signature, now,
     /* Eine Beurteilung zu einer Stelle, die es in diesem Datensatz nicht
        gibt, waere eine Antwort auf eine nicht gestellte Frage. */
     if (stelle < 0) return null;
-    /* Und eine zweite Antwort auf dieselbe Frage ueberschriebe die erste.
-       Wer eine Beurteilung revidieren will, macht das als eigener,
-       sichtbarer Vorgang — nicht still an derselben Stelle. */
-    if (gepflegt[stelle].klaerung) return null;
+    /* Eine ABGESCHLOSSENE Antwort bleibt unantastbar. Wer sie revidieren
+       will, macht das als eigener, sichtbarer Vorgang — nicht still an
+       derselben Stelle.
+
+       BEFUND der unabhaengigen Gegenpruefung an rc.4.45, zutreffend:
+       bis hier stand an dieser Stelle `if (gepflegt[stelle].klaerung)
+       return null;` — und das traf auch "weitere Pruefung noetig". Genau
+       die ist aber KEIN Abschluss; sie sagt das Gegenteil, und
+       offeneSchadensverdachte haelt den Punkt deshalb offen. Gemessen:
+       die vorlaeufige Beurteilung wurde gespeichert, die abschliessende
+       gab null zurueck, und die Freigabe blieb mit
+       OPEN_MANUAL_FINDING gesperrt. Der Vorgang war eingemauert — eine
+       Blockade, kein Falsch-PASS, aber ohne legitimen Ausweg.
+
+       Deshalb GENAU EINE Oeffnung, und keine breitere: eine Vertagung
+       darf fortgesetzt werden. Jeder andere Inhalt — ein Abschluss oder
+       ein Wert, den dieser Stand nicht schreiben kann — bleibt
+       verschlossen. Die fruehere Antwort wird dabei nicht ersetzt,
+       sondern waechst in `klaerungsverlauf` (append-only, aelteste
+       zuerst); `klaerung` traegt die jeweils geltende. Die
+       Speichergrenze prueft dasselbe noch einmal und enger
+       (pruefeKlaerungsDelta). */
+    const bisherige = gepflegt[stelle].klaerung;
+    if (bisherige
+      && bisherige.ergebnis !== VERDACHT_KLAERUNG.WEITERE_PRUEFUNG_NOETIG) return null;
+    const verlauf = Array.isArray(gepflegt[stelle].klaerungsverlauf)
+      ? [...gepflegt[stelle].klaerungsverlauf] : [];
+    if (bisherige) verlauf.push(bisherige);
     gepflegt[stelle] = {
       ...gepflegt[stelle],
+      ...(verlauf.length ? { klaerungsverlauf: verlauf } : {}),
       klaerung: {
         at: now, username: actor.username, role: actor.role,
         ergebnis: k.ergebnis, begruendung,

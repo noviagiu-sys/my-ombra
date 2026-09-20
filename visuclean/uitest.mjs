@@ -598,6 +598,44 @@ ok("U4", "Login nennt Version und Demonstrator-Abgrenzung",
       : /T PASS/.test(altSicht) ? "T PASS wie im Stand 8.2"
         : "der historische Befund ist im Bericht verlorengegangen");
 
+  /* U31 · BEFUND der unabhaengigen Gegenpruefung an rc.4.45, Punkt 2:
+     eine Pruefpunktliste, in der zwei der drei erforderlichen
+     Intakt-Punkte FEHLEN, zeigte im Bericht "I PASS" und eine gruene
+     Urteilskarte. Geprueft wird die ECHTE Darstellung, nicht nur die
+     Funktion: der Befund stand auf dem Bildschirm, nicht in einem
+     Rueckgabewert. */
+  const intaktUnvollstaendig = {
+    ...wartend,
+    id: "insp-ui-intakt-luecke",
+    aggregate: { ...wartend.aggregate, checkpoints: [
+      { id: "scratch", required: true, status: "PASS", code: "PASS",
+        label: { de: "Kratzer und Riefen", en: "Scratches" },
+        message: { de: "Bestanden", en: "Pass" }, actions: [], measurements: {} },
+    ] },
+    checkpoints: [
+      { id: "scratch", required: true, status: "PASS", code: "PASS",
+        label: { de: "Kratzer und Riefen", en: "Scratches" },
+        message: { de: "Bestanden", en: "Pass" }, actions: [], measurements: {} },
+    ],
+    photos: [{ ...fotos[0], result: { ...fotos[0].result, checkpoints: [
+      { id: "scratch", required: true, status: "PASS" },
+    ] } }],
+  };
+  let luckenSicht = ""; let luckenFehler = "";
+  try {
+    luckenSicht = renderToStaticMarkup(React.createElement(RecordDetail, {
+      record: intaktUnvollstaendig, language: "de", onBack: () => {}, t: uebersetzer,
+    }));
+  } catch (fehler) { luckenFehler = String(fehler?.message || fehler); }
+  const kachelIntaktGruen = /I PASS/.test(luckenSicht);
+  const kachelIntaktUnklar = /I \?/.test(luckenSicht);
+  ok("U31", "Ein unvollstaendiges Intakt erscheint im Bericht nicht als PASS",
+    !luckenFehler && kachelIntaktUnklar && !kachelIntaktGruen
+    && /verdict-unknown/.test(luckenSicht),
+    luckenFehler ? `ABSTURZ: ${luckenFehler}`
+      : `Fotokachel ${kachelIntaktGruen ? "I PASS (FALSCH)" : kachelIntaktUnklar ? "I ?" : "ohne Kurzform"}`
+        + ` · Urteilskarte ${/verdict-unknown/.test(luckenSicht) ? "nicht bewertbar" : "GRUEN"}`);
+
   ok("U15", "Der Pruefer selbst sieht sie nicht, auch nicht mit QA-Rolle",
     !alsPruefer.includes("releaseNow") && alsPruefer.includes("pendingQaHint"),
     !alsPruefer.includes("releaseNow")

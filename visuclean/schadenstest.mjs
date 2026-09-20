@@ -876,6 +876,72 @@ const satzMit = (spitze = 10) => buildInspectionRecord({
     `RECORD_SCHEMA_VERSION ${RECORD_SCHEMA_VERSION}`
     + ` ≥ PRUEFPUNKTE_AB_SCHEMAVERSION ${PRUEFPUNKTE_AB_SCHEMAVERSION}`
     + ` · Altbestand → ${istAltdatensatz(heutiger)}`);
+
+  /* ── BEFUND der unabhängigen Gegenpruefung an rc.4.45, Punkt 2 ──────
+     "kriteriumStatus filtert auf VORHANDENE passende Pruefpunkte. Bei
+     intact gehoeren scratch, corrosion und surface dazu. Fehlen zwei und
+     ist einer PASS, bleibt PASS."
+
+     Reproduziert: eine Liste mit nur `scratch: PASS` ergab "Intakt: PASS".
+     Zwei der drei erforderlichen Punkte fehlten — und ein fehlender Punkt
+     ist kein bestandener. Worst-Result-Wins ueber die ANWESENDEN sagt
+     nichts ueber die abwesenden; genau das ist ein PASS aus Nichtwissen.
+
+     Die Regel ab hier: FAIL behaelt Vorrang (ein Befund verschwindet nie
+     hinter einer Luecke), ansonsten verlangt ein PASS Vollstaendigkeit.
+     Fehlt ein erforderlicher Punkt, ist das Kriterium NICHT BEWERTBAR.  */
+  const nurEiner = [punkt("scratch", ST.PASS)];
+  ok("F11", "Ein unvollstaendiges Intakt ist nicht bewertbar, nicht bestanden",
+    kriteriumStatus(nurEiner, "intact") === ST.NOT_ASSESSABLE,
+    `nur scratch:PASS → ${kriteriumStatus(nurEiner, "intact")}`
+    + " (bis rc.4.45: PASS)");
+
+  /* F12 · Der GEGENFALL. Eine Regel, die alles auf "nicht bewertbar"
+     zieht, waere genauso falsch wie das stille PASS. Vollstaendig und
+     dreimal bestanden bleibt bestanden — und ein Kriterium mit nur einem
+     Pruefpunkt (dry, clean) ist mit diesem einen vollstaendig. */
+  const alleDrei = [punkt("scratch", ST.PASS), punkt("corrosion", ST.PASS),
+    punkt("surface", ST.PASS)];
+  ok("F12", "Ein vollstaendiges Intakt bleibt bestanden",
+    kriteriumStatus(alleDrei, "intact") === ST.PASS
+    && kriteriumStatus([punkt("moisture", ST.PASS)], "dry") === ST.PASS,
+    `alle drei → ${kriteriumStatus(alleDrei, "intact")}`
+    + ` · dry mit seinem einen Punkt → ${kriteriumStatus([punkt("moisture", ST.PASS)], "dry")}`);
+
+  /* F13 · FAIL behaelt Vorrang vor der Vollstaendigkeit. Sonst koennte
+     eine unvollstaendige Liste einen echten Befund in ein weicheres
+     "nicht bewertbar" verwandeln — die Umkehrung von Regel 3. */
+  const unvollstaendigFail = [punkt("scratch", ST.FAIL, "SCRATCH_DETECTED_ORIGIN_UNDETERMINED")];
+  ok("F13", "Ein FAIL bleibt FAIL, auch wenn Pruefpunkte fehlen",
+    kriteriumStatus(unvollstaendigFail, "intact") === ST.FAIL,
+    `nur scratch:FAIL → ${kriteriumStatus(unvollstaendigFail, "intact")}`);
+
+  /* F14 · Die Wirkung auf die Kurzform — und die Sperre gegen den
+     Rueckfall: eine unvollstaendige Liste darf auch bei einem
+     nachgewiesenen ALTBESTAND nicht auf den gruenen Rohbefund
+     zurueckfallen. Die Luecke ist keine Geschichte. */
+  ok("F14", "Die Kurzform eines unvollstaendigen Intakt ist '?', nicht 'PASS'",
+    kriteriumKurz(nurEiner, "intact", true) === "?"
+    && kriteriumKurz(nurEiner, "intact", true, true) === "?"
+    && kriteriumKurz(unvollstaendigFail, "intact", true, true) === "FAIL"
+    && kriteriumKurz(alleDrei, "intact", true) === "PASS",
+    `unvollstaendig → ${kriteriumKurz(nurEiner, "intact", true)}`
+    + ` · als Altbestand → ${kriteriumKurz(nurEiner, "intact", true, true)}`
+    + ` · unvollstaendig+FAIL → ${kriteriumKurz(unvollstaendigFail, "intact", true, true)}`
+    + ` · vollstaendig → ${kriteriumKurz(alleDrei, "intact", true)}`);
+
+  /* F15 · Und die Grenze der Regel: eine Liste OHNE jeden passenden
+     Punkt behauptet weiter NICHTS (null). Sie ist der Altbestandsfall aus
+     F5/F9, und die Unterscheidung zwischen "gar keine Liste" und
+     "Liste mit Luecke" muss erhalten bleiben — sonst verlieren
+     Altbestaende ihre historische Aussage. */
+  ok("F15", "Ohne passenden Pruefpunkt wird weiterhin nichts behauptet",
+    kriteriumStatus([], "intact") === null
+    && kriteriumStatus([punkt("moisture", ST.PASS)], "intact") === null
+    && kriteriumKurz([], "dry", true, true) === "PASS",
+    `leer → ${kriteriumStatus([], "intact")}`
+    + ` · nur fremde Punkte → ${kriteriumStatus([punkt("moisture", ST.PASS)], "intact")}`
+    + ` · Altbestand ohne Liste → ${kriteriumKurz([], "dry", true, true)}`);
 }
 
 /* ═══ C · Ein nachgeladener Kandidat ist auffindbar und messbar ═════════
@@ -1303,6 +1369,266 @@ const satzMit = (spitze = 10) => buildInspectionRecord({
     && istKlaerungsschritt(geklaerterStand) === true,
     `Vorgaenger gekennzeichnet ${Boolean(geklaerterStand?.clarification)}`
     + ` · Entscheid ${JSON.stringify(entscheid?.clarification ?? "FEHLT")}`);
+}
+
+/* ═══ N · BEFUND der unabhaengigen Gegenpruefung an rc.4.45, Punkt 1 ═════
+   "Eine QA-Beurteilung 'Weitere Pruefung noetig' laesst sich nicht
+   abschliessend fortsetzen."
+
+   Reproduziert mit den echten Funktionen der Lieferung:
+   firstSaved=true, open=1, secondBuilderResult=null, Freigabe
+   allowed=false/OPEN_MANUAL_FINDING. Der Vorgang war eingemauert.
+
+   Die Ursachen lagen an zwei Stellen und zogen in dieselbe Richtung:
+     - buildClarificationRecord: `if (gepflegt[stelle].klaerung) return null;`
+     - pruefeKlaerungsDelta: eine bestehende `klaerung` durfte nicht
+       abweichen, und `beantwortet` zaehlte nur die ERSTE Antwort.
+
+   Beide sind richtig gegen das stille Ueberschreiben einer
+   abgeschlossenen Beurteilung — und beide waren zu grob. "Weitere
+   Pruefung noetig" IST keine abgeschlossene Beurteilung; sie sagt
+   ausdruecklich das Gegenteil (offeneSchadensverdachte haelt den Punkt
+   deshalb offen, W-Block).
+
+   Die Reparatur macht deshalb KEINE Schreibsperre auf und schliesst
+   nichts vorzeitig. Sie unterscheidet die beiden Faelle:
+     - offen (unbeurteilt ODER weitere Pruefung noetig) → eine
+       Folgebeurteilung ist zulaessig, die fruehere wandert
+       unveraendert in `klaerungsverlauf` (append-only);
+     - abgeschlossen (KEIN_SCHADEN / SCHADEN_BESTAETIGT) → unantastbar,
+       wie bisher.
+
+   Geprueft wird der ganze Weg ueber die ECHTE Persistenz, nicht nur der
+   Rueckgabewert der Bauteile.                                          */
+{
+  const { recordDigest } = await import("./src/audit.js");
+  const { saveInspection, loadInspections, pruefeKlaerungsDelta }
+    = await import("./src/persistence.js");
+  const { CHECKPOINTS, STATUS } = await import("./src/assessment.js");
+  const { CAPTURE_PATH, VERDACHT_KLAERUNG } = await import("./src/decision.js");
+  const { buildClarificationRecord, KLAERUNG_MEANING }
+    = await import("./src/inspectionRecord.js");
+  const { qaDecisionOptions } = await import("./src/lifecycle.js");
+
+  const pruefer = { username: "operator2", displayName: "Operator 2", role: "Operator" };
+  const qa = { username: "qa_manager", displayName: "QA Manager", role: "QA Manager" };
+  const qa2 = { username: "qa_zweite", displayName: "QA Zweite", role: "QA Manager" };
+  const urteil = { code: "PASS", pass: true, message: "PASS", detail: "x", severity: 0, action: "" };
+  const punkte = CHECKPOINTS.map(meta => ({
+    id: meta.id, status: STATUS.PASS, code: "PASS", required: meta.required,
+    label: { de: meta.de, en: meta.en }, message: { de: "Bestanden", en: "Pass" },
+    reason: "Testfixture", actions: [], measurements: {},
+  }));
+  const meldung = {
+    kind: "MANUAL_DAMAGE_SUSPECTED", username: pruefer.username, role: pruefer.role,
+    at: "2026-09-18T09:00:00.000Z",
+    reason: "Punktfoermige Stelle am Rand, vom Detektor nicht gemeldet",
+    photoId: "photo-1", markerId: "marker-1", klaerung: null,
+  };
+  const signatur = {
+    method: "USER_ID_PASSWORD", components: ["userId", "password"],
+    meaning: "Pruefung erfasst, Freigabe ausstehend",
+    signedAt: "2026-09-18T09:10:00.000Z", signedBy: pruefer.username,
+  };
+  const wartend = {
+    id: "inspection-wartend-n", schema: 2, appVersion: "8.3.0-rc.4.45",
+    createdAt: signatur.signedAt, signedAt: signatur.signedAt,
+    user: pruefer, eqId: "tp", eqName: "Tablettenpresse",
+    zoneId: "die", zoneName: "Matrizenteller", photoCount: 1,
+    photos: [{ id: "photo-1", image: "data:image/jpeg;base64,QQ==",
+      annotatedImage: "data:image/jpeg;base64,QQ==",
+      markers: [{ id: "marker-1", x: 0.5, y: 0.5 }], markerAssessments: [],
+      result: { dry: urteil, clean: urteil, intact: urteil, lm: 0.6, hints: [],
+        checkpoints: punkte },
+      captureProfile: { processedWidth: 480, processedHeight: 640,
+        sourceWidth: 480, sourceHeight: 640, path: CAPTURE_PATH.CAMERA },
+      knownIssueInfo: null }],
+    aggregate: { dry: urteil, clean: urteil, intact: urteil, lm: 0.6, hints: [],
+      checkpoints: punkte },
+    originalSystemDecision: { status: "PASS", reason: "ALL_PASS", failed: [] },
+    finalDecision: null, comment: "Stelle gemeldet, Beurteilung durch die QA",
+    overrideReason: null, referenceId: null, signature: signatur,
+    schemaVersion: 3, state: LIFECYCLE_STATE.PENDING_QA,
+    previousState: LIFECYCLE_STATE.DRAFT, checkpoints: punkte, reauthenticated: true,
+    performedBy: { username: pruefer.username, role: pruefer.role, at: signatur.signedAt },
+    approvedBy: null, approvalRevisionHash: null, revisionHash: null,
+    retakes: [], manualFindings: [meldung], knownIssueAssignments: [],
+    qaTriggers: [{ code: "MANUAL_DAMAGE_SUSPECTED", source: "MANUAL_FINDING", at: meldung.at }],
+    aiCrosscheck: { enabled: false, status: "AI_CROSSCHECK_DISABLED", unresolvedConflicts: 0 },
+  };
+  wartend.recordHash = await recordDigest(wartend);
+  await saveInspection(wartend, pruefer);
+
+  const hole = async id => (await loadInspections()).find(r => r.id === id);
+  const baue = (bezug, actor, klaerungen, id, now) => buildClarificationRecord({
+    pending: bezug, actor,
+    signature: { method: "USER_ID_PASSWORD", components: ["userId", "password"] },
+    now, newId: id, appVersion: "8.3.0-rc.4.45", klaerungen,
+  });
+  const speichere = async (satz, actor) => {
+    if (!satz) return "kein Datensatz gebaut";
+    satz.recordHash = await recordDigest(satz);
+    try { await saveInspection(satz, actor); return null; }
+    catch (fehler) { return fehler.message; }
+  };
+
+  /* Schritt 1 · Die VORLAEUFIGE Beurteilung. Sie ist der Ausgangspunkt
+     des Befunds und muss durchgehen — sie ging auch bisher durch. */
+  const vorlaeufig = baue(await hole(wartend.id), qa,
+    [{ photoId: "photo-1", markerId: "marker-1",
+      ergebnis: VERDACHT_KLAERUNG.WEITERE_PRUEFUNG_NOETIG,
+      begruendung: "Unter Streiflicht nicht eindeutig, zweite Person hinzuziehen" }],
+    "inspection-klaerung-n1", "2026-09-18T10:00:00.000Z");
+  const fehler1 = await speichere(vorlaeufig, qa);
+  const standN1 = await hole("inspection-klaerung-n1");
+  const offenN1 = offeneSchadensverdachte(standN1?.manualFindings || []);
+  ok("N1", "Eine vorlaeufige Beurteilung wird gespeichert und bleibt offen",
+    fehler1 === null && offenN1.length === 1
+    && standN1?.manualFindings?.[0]?.klaerung?.ergebnis === "WEITERE_PRUEFUNG_NOETIG",
+    fehler1 ? `abgewiesen: ${fehler1}`
+      : `gespeichert · offen ${offenN1.length}`
+        + ` · ${standN1?.manualFindings?.[0]?.klaerung?.ergebnis}`);
+
+  /* Schritt 2 · Die ABSCHLIESSENDE Beurteilung derselben Stelle. Genau
+     hier war der Vorgang eingemauert: der Builder gab null zurueck. */
+  const abschliessend = baue(standN1, qa2,
+    [{ photoId: "photo-1", markerId: "marker-1",
+      ergebnis: VERDACHT_KLAERUNG.KEIN_SCHADEN,
+      begruendung: "Zu zweit unter Streiflicht nachgesehen: Schliffspur, kein Ausbruch" }],
+    "inspection-klaerung-n2", "2026-09-18T11:00:00.000Z");
+  ok("N2", "Eine offene vorlaeufige Beurteilung laesst sich fortsetzen",
+    Boolean(abschliessend)
+    && abschliessend.manualFindings?.[0]?.klaerung?.ergebnis === "KEIN_SCHADEN",
+    abschliessend
+      ? `Folgebeurteilung ${abschliessend.manualFindings?.[0]?.klaerung?.ergebnis}`
+      : "KEIN DATENSATZ — der Builder verweigert die Fortsetzung");
+
+  const fehler2 = await speichere(abschliessend, qa2);
+  const standN2 = await hole("inspection-klaerung-n2");
+  ok("N3", "Die Folgebeurteilung kommt durch die Speichergrenze",
+    fehler2 === null && Boolean(standN2),
+    fehler2 ? `abgewiesen: ${fehler2}` : "gespeichert");
+
+  /* N4 · Die fruehere Beurteilung ist NICHT verschwunden. Sie steht
+     unveraendert im Verlauf, mit ihrer eigenen Person, Zeit und
+     Begruendung — sonst waere die Fortsetzung ein Ueberschreiben mit
+     zusaetzlichen Schritten. */
+  const verlauf = standN2?.manualFindings?.[0]?.klaerungsverlauf || [];
+  ok("N4", "Die fruehere Beurteilung bleibt im Verlauf erhalten",
+    verlauf.length === 1
+    && verlauf[0]?.ergebnis === "WEITERE_PRUEFUNG_NOETIG"
+    && verlauf[0]?.username === qa.username
+    && verlauf[0]?.at === "2026-09-18T10:00:00.000Z"
+    && verlauf[0]?.begruendung
+      === "Unter Streiflicht nicht eindeutig, zweite Person hinzuziehen",
+    `Verlauf ${verlauf.length} Eintrag/Eintraege`
+    + ` · ${JSON.stringify(verlauf[0] ?? null).slice(0, 110)}`);
+
+  /* N5 · Die Wirkung: der Verdacht ist beantwortet, die Sperre faellt.
+     Ohne diesen Schritt war der Vorgang nur ueber die Sperrung zu
+     verlassen. */
+  const beurteilt = standN2?.manualFindings?.[0]?.klaerung?.ergebnis ?? null;
+  const offenDanach = offeneSchadensverdachte(standN2?.manualFindings || []);
+  const angebot = qaDecisionOptions({
+    ...(standN2 || {}), aggregate: { checkpoints: punkte },
+    originalSystemDecision: { status: "PASS" },
+  });
+  /* Ohne gespeicherte Antwort ist dieser Punkt NICHT erfuellt: eine leere
+     Meldungsliste ergaebe sonst "nichts offen" und damit ein gruenes
+     Ergebnis aus dem falschen Grund. */
+  ok("N5", "Nach der abschliessenden Beurteilung ist die Freigabe erreichbar",
+    beurteilt === "KEIN_SCHADEN" && offenDanach.length === 0
+    && angebot.release.allowed === true,
+    `gespeicherte Antwort ${beurteilt ?? "KEINE"}`
+    + ` · offen ${offenDanach.length} · Freigabe ${angebot.release.allowed}`
+    + ` (${angebot.release.code ?? "ohne Sperrgrund"})`);
+
+  /* N6 · SABOTAGE-GEGENPROBE. Die Sperre gegen das stille Ueberschreiben
+     darf NICHT gefallen sein: eine ABGESCHLOSSENE Beurteilung bleibt
+     unantastbar. Waere das nicht so, haette die Reparatur den Riegel
+     entfernt statt ihn zu praezisieren. */
+  const ueberschreiben = baue(standN2, qa,
+    [{ photoId: "photo-1", markerId: "marker-1",
+      ergebnis: VERDACHT_KLAERUNG.SCHADEN_BESTAETIGT,
+      begruendung: "Doch ein Ausbruch, fruehere Beurteilung war falsch" }],
+    "inspection-klaerung-n3", "2026-09-18T12:00:00.000Z");
+  ok("N6", "Eine abgeschlossene Beurteilung bleibt unantastbar",
+    ueberschreiben === null,
+    ueberschreiben === null ? "abgewiesen, wie es sein muss"
+      : "GEBAUT — KEIN_SCHADEN liess sich still zu SCHADEN_BESTAETIGT machen");
+
+  /* N7 · Dieselbe Sperre an der Speichergrenze, unter Umgehung des
+     Builders. Drei Wege, den Verlauf zu faelschen, und alle drei muessen
+     abgewiesen werden:
+       (a) eine abgeschlossene Antwort ersetzen;
+       (b) den Verlauf verkuerzen (die fruehere Beurteilung loeschen);
+       (c) einen Verlaufseintrag nachtraeglich umschreiben. */
+  const gefaelscht = standN2 ? standN2.manualFindings[0] : null;
+  const faelschung = inhalt => ({
+    ...(standN2 || {}), manualFindings: [{ ...(gefaelscht || {}), ...inhalt }],
+  });
+  const ersetzen = gefaelscht ? pruefeKlaerungsDelta(standN2, faelschung({
+    klaerung: { at: "2026-09-18T13:00:00.000Z", username: qa.username,
+      role: qa.role, ergebnis: "SCHADEN_BESTAETIGT", begruendung: "umentschieden" },
+  })) : { valid: null, error: "kein Folgestand vorhanden" };
+  const verkuerzen = gefaelscht
+    ? pruefeKlaerungsDelta(standN1, faelschung({ klaerungsverlauf: [] }))
+    : { valid: null, error: "kein Folgestand vorhanden" };
+  const umschreiben = gefaelscht ? pruefeKlaerungsDelta(standN1, faelschung({
+    klaerungsverlauf: [{ ...(verlauf[0] || {}), ergebnis: "KEIN_SCHADEN" }],
+  })) : { valid: null, error: "kein Folgestand vorhanden" };
+  ok("N7", "Der Verlauf ist append-only, auch ohne den Builder",
+    ersetzen.valid === false && verkuerzen.valid === false && umschreiben.valid === false,
+    `ersetzen ${ersetzen.valid} · verkuerzen ${verkuerzen.valid}`
+    + ` · umschreiben ${umschreiben.valid}`
+    + ` · ${[ersetzen, verkuerzen, umschreiben].find(r => r.valid !== false)?.error ?? "alle drei abgewiesen"}`);
+
+  /* N8 · Append-only ueber den ganzen Weg: Original UND Zwischenstand
+     stehen nach der Fortsetzung unveraendert da. Leitplanke 6. */
+  const originalDanach = await hole(wartend.id);
+  const zwischenDanach = await hole("inspection-klaerung-n1");
+  ok("N8", "Original und Zwischenstand bleiben unveraendert stehen",
+    originalDanach?.recordHash === wartend.recordHash
+    && originalDanach?.manualFindings?.[0]?.klaerung === null
+    && zwischenDanach?.recordHash === standN1?.recordHash
+    && zwischenDanach?.manualFindings?.[0]?.klaerung?.ergebnis === "WEITERE_PRUEFUNG_NOETIG"
+    && (zwischenDanach?.manualFindings?.[0]?.klaerungsverlauf ?? []).length === 0,
+    `Original ${originalDanach?.recordHash === wartend.recordHash}`
+    + ` · Zwischenstand ${zwischenDanach?.manualFindings?.[0]?.klaerung?.ergebnis}`);
+
+  /* N9 · Rollen, Bindung und Signaturbedeutung gelten auch fuer die
+     Folgebeurteilung. Sie zeigt auf die Revision, die sie tatsaechlich
+     gelesen hat — den Zwischenstand, nicht das Original. */
+  ok("N9", "Die Folgebeurteilung ist gebunden, gezeichnet und zugeordnet",
+    standN2?.supersedesId === "inspection-klaerung-n1"
+    && standN2?.approvalRevisionHash === standN1?.recordHash
+    && standN2?.signature?.meaning === KLAERUNG_MEANING
+    && standN2?.signature?.signedBy === qa2.username
+    && standN2?.user?.role === "QA Manager"
+    && standN2?.state === LIFECYCLE_STATE.PENDING_QA
+    && standN2?.approvedBy === null && standN2?.finalDecision === null,
+    `loest ${standN2?.supersedesId} ab · Revision gebunden`
+    + ` ${standN2?.approvalRevisionHash === standN1?.recordHash}`
+    + ` · Bedeutung "${standN2?.signature?.meaning}"`);
+
+  /* N10 · Kein vorzeitiges Schliessen: eine Folgebeurteilung darf erneut
+     "weitere Pruefung noetig" lauten. Sie ist dokumentiert, sie wandert
+     in den Verlauf — und sie sperrt die Freigabe weiter. Eine Reparatur,
+     die den Punkt beim zweiten Mal zwangsweise schliesst, waere genau
+     der Fehler, vor dem der Auftrag warnt. */
+  const nochmal = baue(standN1, qa2,
+    [{ photoId: "photo-1", markerId: "marker-1",
+      ergebnis: VERDACHT_KLAERUNG.WEITERE_PRUEFUNG_NOETIG,
+      begruendung: "Zweite Person bestaetigt die Unklarheit, Messung veranlasst" }],
+    "inspection-klaerung-n4", "2026-09-18T11:30:00.000Z");
+  const offenNochmal = offeneSchadensverdachte(nochmal?.manualFindings || []);
+  ok("N10", "Eine erneute Vertagung ist zulaessig und sperrt weiter",
+    Boolean(nochmal)
+    && (nochmal.manualFindings?.[0]?.klaerungsverlauf ?? []).length === 1
+    && offenNochmal.length === 1,
+    nochmal ? `Verlauf ${(nochmal.manualFindings?.[0]?.klaerungsverlauf ?? []).length}`
+      + ` · offen ${offenNochmal.length}`
+      : "KEIN DATENSATZ — eine erneute Vertagung ist nicht moeglich");
 }
 
 console.log("");

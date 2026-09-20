@@ -13,7 +13,7 @@ import {
   SCRATCH_STATUS, collectQaTriggers, depthStatusMatchesMeasurement,
   hasCaptureProfile, hasDeviation, rejectsNumericDepth,
   validateKnownIssueAssignment, validateManualFinding, validateRetakeRecord,
-  bestaetigteSchaeden, offeneSchadensverdachte,
+  bestaetigteSchaeden, offeneSchadensverdachte, VERDACHT_KLAERUNG,
 } from "./decision.js";
 import { evaluateDepthMeasurement, istSpeicherbar } from "./depthLimit.js";
 import { markerInFlaeche } from "./inspectionArea.js";
@@ -320,19 +320,45 @@ export function pruefeKlaerungsDelta(bezug, record) {
   }
   let beantwortet = 0;
   for (let i = 0; i < alt.length; i++) {
-    const { klaerung: alteKlaerung, ...alterRest } = alt[i] ?? {};
-    const { klaerung: neueKlaerung, ...neuerRest } = neu[i] ?? {};
+    const { klaerung: alteKlaerung, klaerungsverlauf: alterVerlauf, ...alterRest } = alt[i] ?? {};
+    const { klaerung: neueKlaerung, klaerungsverlauf: neuerVerlauf, ...neuerRest } = neu[i] ?? {};
     if (canonicalize(alterRest) !== canonicalize(neuerRest)) {
       return { valid: false,
         error: "Die Beurteilung veraendert die Meldung selbst "
           + `(${alt[i]?.markerId ?? "ohne Kennung"}). Sie beantwortet sie nur.` };
     }
-    if (alteKlaerung && canonicalize(alteKlaerung) !== canonicalize(neueKlaerung ?? null)) {
+    /* Fehlender und leerer Verlauf sind dasselbe: der Builder schreibt das
+       Feld erst, wenn es etwas zu erzaehlen gibt. */
+    const alteListe = Array.isArray(alterVerlauf) ? alterVerlauf : [];
+    const neueListe = Array.isArray(neuerVerlauf) ? neuerVerlauf : [];
+
+    /* Die eine zulaessige Fortsetzung: eine VERTAGTE Beurteilung
+       ("weitere Pruefung noetig") wird beantwortet. Sie verschwindet
+       dabei nicht, sondern rueckt unveraendert ans Ende des Verlaufs.
+       Alles andere bleibt, was es war — unueberschreibbar. */
+    const vertagt = alteKlaerung?.ergebnis === VERDACHT_KLAERUNG.WEITERE_PRUEFUNG_NOETIG;
+    const fortgesetzt = Boolean(alteKlaerung) && vertagt
+      && canonicalize(neueKlaerung ?? null) !== canonicalize(alteKlaerung);
+
+    /* APPEND-ONLY, und zwar in beide Richtungen gesperrt: der Verlauf
+       waechst hoechstens um die eine vertagte Antwort und sonst gar
+       nicht. Damit laesst sich weder eine fruehere Beurteilung
+       herausloeschen oder umschreiben, noch eine nie gegebene
+       nachtraeglich hineinerfinden. */
+    const erwarteterVerlauf = fortgesetzt ? [...alteListe, alteKlaerung] : alteListe;
+    if (canonicalize(neueListe) !== canonicalize(erwarteterVerlauf)) {
+      return { valid: false,
+        error: "Der Verlauf der Beurteilungen ist append-only: er darf nur um die "
+          + "vertagte Antwort wachsen, nicht gekuerzt oder umgeschrieben werden "
+          + `(${alt[i]?.markerId ?? "ohne Kennung"})` };
+    }
+    if (alteKlaerung && !fortgesetzt
+      && canonicalize(alteKlaerung) !== canonicalize(neueKlaerung ?? null)) {
       return { valid: false,
         error: "Eine bereits dokumentierte Beurteilung darf nicht ueberschrieben werden "
           + `(${alt[i]?.markerId ?? "ohne Kennung"})` };
     }
-    if (!alteKlaerung && neueKlaerung) beantwortet++;
+    if ((!alteKlaerung && neueKlaerung) || fortgesetzt) beantwortet++;
   }
   if (!beantwortet) {
     return { valid: false,
