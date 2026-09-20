@@ -88,3 +88,11 @@ danach entscheiden, ob am Kameraweg nachgebessert wird.
 - `visuclean/CHANGELOG.md`, `visuclean/V83_LIEFERUNG_RC445.md`,
   `visuclean/V83_G_KENNZEICHNUNG.md` — Versionsgeschichte, Lieferbericht,
   Messung zu Befund G.
+
+## Gemeinsamer Einstieg erweitert (20.09.2026)
+
+- AGENTS.md gilt ausdrücklich für Codex, Claude Code und Cursor; Claude erhält
+  zusätzlich einen kurzen Verweis unter `.claude/rules/arbeitsgedaechtnis.md`.
+- Gezieltes Lesen, knappe Übergaben und Abgleich bei paralleler Arbeit ergänzt.
+- Nur Dokumentation. Kein neuer Anwendungstest; bisherige Testbezüge bleiben unverändert.
+- Diese Ergänzung ist zunächst ein separater Dokumentationsbranch/PR.
