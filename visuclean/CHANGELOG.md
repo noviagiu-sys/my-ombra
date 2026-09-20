@@ -1,5 +1,34 @@
 # Changelog
 
+## 8.3.0-rc.4.45-camera.1 - Integration
+
+Die Kameraaenderungen wurden in den laufenden Arbeitsstand uebernommen
+(Patch gegen die byte-identische rc.4.45-Basis, nicht durch Kopieren).
+Zusaetzlich in diesem Stand enthalten:
+
+- Vollstaendigkeit der Kriterien: eine unvollstaendige Pruefpunktliste
+  ergibt kein PASS mehr, sondern NICHT BEWERTBAR; FAIL behaelt Vorrang.
+- Fortsetzbare QA-Beurteilung: eine vertagte Beurteilung ("weitere
+  Pruefung noetig") laesst sich abschliessen; die fruehere bleibt in
+  klaerungsverlauf erhalten (append-only).
+- werkbank/kameralauf.mjs: 13 Pruefungen des Kamerawegs im ECHTEN
+  Chromium bei 390x844 (iPhone-schmal), mit Chromiums synthetischer
+  Kamera. Das ist kein Nachweis von Optik, Aufnahmequalitaet,
+  Geraeteunterstuetzung oder iPhone-Verhalten.
+
+## 8.3.0-rc.4.45-camera.1
+
+Eigener Kamera-Entwicklungsstand auf dem unveraendert uebergebenen rc.4.45.
+
+- Kein JPEG-Zwischenbild mehr im Kameraweg: ein eingefrorener Frame wird direkt auf das bestehende Speicherprofil komprimiert.
+- Ausloeser erst bei verfuegbarem Bild; Unterbrechungen sperren die Aufnahme.
+- Kameraanfragen koennen abgebrochen werden. Spaet eintreffende Streams werden beendet; parallele Starts und Aufnahmen verhindert.
+- Kamerazoom und Kameralicht nur bei gemeldeter Geraeteunterstuetzung; tatsaechliche Einstellungen werden zurueckgelesen.
+- Livebild-Aufloesung sichtbar. DE/EN.
+- kameratest.mjs prueft die echte React-Aufnahmekomponente mit kontrollierten Medien-APIs in jsdom. Das ist kein iPhone- oder optischer Nachweis.
+- Analyse-Kern, Kandidatenerkennung und QA-Regeln unveraendert. Die bekannten Restfehler D/F sowie G bleiben offen.
+- Status der vollstaendigen Pruefung und Bereitstellung siehe mitgelieferten Entwicklungsbericht.
+
 ## 8.3.0-rc.4.45 - 2026-09-17
 
 Reparaturauftrag nach rc.4.44, Befunde A bis G. `src/analysisCore.js`

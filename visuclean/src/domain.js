@@ -2,7 +2,7 @@
    gegen package.json, package-lock.json, sw.js, PDF und Etiketten. */
 import { aggregateCheckpoints, overallResult, OVERALL, STATUS } from "./assessment.js";
 
-export const APP_VERSION = "8.3.0-rc.4.45";
+export const APP_VERSION = "8.3.0-rc.4.45-camera.1";
 
 export const USERS = Object.freeze([
   { username: "operator1", password: "pharma2024", role: "Operator", displayName: "Operator 1" },

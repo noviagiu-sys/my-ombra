@@ -1,4 +1,4 @@
-const CACHE = "visuclean-v8.3.0-rc.4.45";
+const CACHE = "visuclean-v8.3.0-rc.4.45-camera.1";
 
 /* Zeitlimit fuer den Netzversuch beim Laden des Dokuments, danach greift
    der Cache.

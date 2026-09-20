@@ -28,6 +28,7 @@ import { FLAECHE_MIN_KANTE, FLAECHE_QUELLE, FLAECHE_VORGABE,
   normalisiereFlaeche, pixelRechteck }
   from "./inspectionArea.js";
 import { ANALYSE_KANTE, AUFNAHMEZWECK } from "./capturePaths.js";
+import { cameraControls, cameraFrameReady, captureCameraFrame, changeCameraControl, compressPhoto } from "./cameraCapture.js";
 import { CONFIG_PFAD, ladeScreeningConfig } from "./screeningConfig.js";
 import {
   fuseAngles, scoreByPersistence,
@@ -729,37 +730,6 @@ function ZoomMarkerViewer({ photo, onMarkersChange, onFlaecheChange = null, t, r
   </div>;
 }
 
-const MAX_PHOTO_BYTES = 1024 * 1024;
-const dataUrlBytes = value => Math.ceil((String(value).split(",")[1]?.length || 0) * 0.75);
-
-function compressPhoto(dataUrl) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => {
-      try {
-        let width = image.naturalWidth; let height = image.naturalHeight;
-        if (!width || !height) throw new Error("Bild besitzt keine gültigen Dimensionen");
-        const initialScale = Math.min(1, 1600 / Math.max(width, height));
-        width = Math.max(1, Math.round(width * initialScale)); height = Math.max(1, Math.round(height * initialScale));
-        const canvas = document.createElement("canvas"); let quality = .86; let result = "";
-        for (let attempt = 0; attempt < 20; attempt++) {
-          canvas.width = width; canvas.height = height;
-          const context = canvas.getContext("2d");
-          context.fillStyle = "#ffffff"; context.fillRect(0, 0, width, height); context.drawImage(image, 0, 0, width, height);
-          result = canvas.toDataURL("image/jpeg", quality);
-          if (dataUrlBytes(result) <= MAX_PHOTO_BYTES) { resolve(result); return; }
-          if (quality > .54) quality -= .08;
-          else { width = Math.max(1, Math.round(width * .82)); height = Math.max(1, Math.round(height * .82)); quality = .78; }
-        }
-        if (dataUrlBytes(result) > MAX_PHOTO_BYTES) throw new Error("Bild konnte nicht unter 1 MB komprimiert werden");
-        resolve(result);
-      } catch (error) { reject(error); }
-    };
-    image.onerror = () => reject(new Error("Bild konnte nicht gelesen werden"));
-    image.src = dataUrl;
-  });
-}
-
 function fileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith("image/")) { reject(new Error("Nur Bilddateien sind erlaubt")); return; }
@@ -782,11 +752,38 @@ function fileAsDataUrl(file) {
 export function MultiCapture({ photos, setPhotos, title, subtitle, reference, onBack, onAnalyze, minPhotos = 1, maxPhotos = 10, t, sequenz = null, zoneId = null, onSequenz = null, onSequenzStart = null }) {
   const [selected, setSelected] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
+  const [frameSize, setFrameSize] = useState(null);
+  const [controls, setControls] = useState({ zoom: null, torch: false, torchOn: false });
+  const [controlBusy, setControlBusy] = useState(false);
+  const [shooting, setShooting] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [error, setError] = useState("");
   const videoRef = useRef(null); const streamRef = useRef(null); const fileRef = useRef(null);
   const mountedRef = useRef(true);
-  const stopCamera = useCallback(() => { streamRef.current?.getTracks().forEach(track => track.stop()); streamRef.current = null; if (mountedRef.current) setCameraOpen(false); }, []);
+  const cameraSession = useRef(0);
+  const startingRef = useRef(false);
+  const shootingRef = useRef(false);
+  const controlBusyRef = useRef(false);
+  const stopCamera = useCallback(() => {
+    cameraSession.current++;
+    startingRef.current = false; shootingRef.current = false; controlBusyRef.current = false;
+    streamRef.current?.getTracks().forEach(track => track.stop()); streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    if (mountedRef.current) {
+      setCameraOpen(false); setCameraStarting(false); setFrameReady(false); setFrameSize(null);
+      setShooting(false); setControlBusy(false);
+      setControls({ zoom: null, torch: false, torchOn: false });
+    }
+  }, []);
+  const updateCameraFrame = useCallback(() => {
+    const video = videoRef.current;
+    const track = streamRef.current?.getVideoTracks()[0];
+    const ready = cameraFrameReady(video, track);
+    setFrameReady(ready);
+    setFrameSize(ready ? { w: video.videoWidth, h: video.videoHeight } : null);
+  }, []);
   useEffect(() => { mountedRef.current = true; return () => { mountedRef.current = false; stopCamera(); }; }, [stopCamera]);
   useEffect(() => { if (selected >= photos.length) setSelected(Math.max(0, photos.length - 1)); }, [photos.length, selected]);
   /* ── P3 · geführter Ablauf ────────────────────────────────────────────
@@ -823,13 +820,20 @@ export function MultiCapture({ photos, setPhotos, title, subtitle, reference, on
     });
   }, [maxPhotos, setPhotos, sequenz, onSequenz]);
   const startCamera = async () => {
-    setCameraError("");
+    if (startingRef.current || streamRef.current) return;
+    startingRef.current = true;
+    const session = ++cameraSession.current;
+    setCameraStarting(true); setCameraError(""); setFrameReady(false);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } });
-      if (!mountedRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
-      streamRef.current = stream; setCameraOpen(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } });
+      if (!mountedRef.current || session !== cameraSession.current) { stream.getTracks().forEach(track => track.stop()); return; }
+      streamRef.current = stream; setControls(cameraControls(stream.getVideoTracks()[0])); setCameraOpen(true);
       /* Der Stream wird NICHT hier angehaengt. Siehe den Effekt unten. */
-    } catch { setCameraError(t("cameraUnavailable")); }
+    } catch {
+      if (mountedRef.current && session === cameraSession.current) setCameraError(t("cameraUnavailable"));
+    } finally {
+      if (mountedRef.current && session === cameraSession.current) { startingRef.current = false; setCameraStarting(false); }
+    }
   };
 
   /* ─── RC4.5 · Warum das ein Effekt ist und kein requestAnimationFrame ───
@@ -848,14 +852,54 @@ export function MultiCapture({ photos, setPhotos, title, subtitle, reference, on
     const stream = streamRef.current;
     if (!cameraOpen || !video || !stream) return;
     if (video.srcObject !== stream) video.srcObject = stream;
-    video.play().catch(error => setCameraError(`${t("cameraUnavailable")} (${error?.name || error})`));
-  }, [cameraOpen, t]);
+    video.play().catch(error => {
+      if (streamRef.current !== stream) return;
+      stopCamera(); setCameraError(`${t("cameraUnavailable")} (${error?.name || error})`);
+    });
+  }, [cameraOpen, t, stopCamera]);
+  useEffect(() => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!cameraOpen || !track) return;
+    const ended = () => { stopCamera(); setCameraError(t("cameraUnavailable")); };
+    track.addEventListener("mute", updateCameraFrame);
+    track.addEventListener("unmute", updateCameraFrame);
+    track.addEventListener("ended", ended);
+    return () => {
+      track.removeEventListener("mute", updateCameraFrame);
+      track.removeEventListener("unmute", updateCameraFrame);
+      track.removeEventListener("ended", ended);
+    };
+  }, [cameraOpen, t, stopCamera, updateCameraFrame]);
+  const setCameraControl = async (name, value) => {
+    if (controlBusyRef.current || shootingRef.current) return;
+    const track = streamRef.current?.getVideoTracks()[0];
+    const session = cameraSession.current;
+    controlBusyRef.current = true; setControlBusy(true); setCameraError("");
+    try { await changeCameraControl(track, name, value); }
+    catch {
+      if (mountedRef.current && session === cameraSession.current) setCameraError(t("cameraSettingFailed"));
+    } finally {
+      if (mountedRef.current && session === cameraSession.current) {
+        setControls(cameraControls(track)); controlBusyRef.current = false; setControlBusy(false);
+      }
+    }
+  };
   const shoot = async () => {
-    const video = videoRef.current; if (!video || photos.length >= grenze) return;
-    const canvas = document.createElement("canvas"); canvas.width = video.videoWidth || 1280; canvas.height = video.videoHeight || 720;
+    const video = videoRef.current;
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (shootingRef.current || controlBusyRef.current || photos.length >= grenze) return;
+    if (!frameReady || !cameraFrameReady(video, track)) { setError(t("cameraWaiting")); return; }
+    const session = cameraSession.current;
+    shootingRef.current = true; setShooting(true);
     try {
-      canvas.getContext("2d").drawImage(video, 0, 0); addSources([await compressPhoto(canvas.toDataURL("image/jpeg", .88))]); setSelected(photos.length); setError("");
-    } catch (caught) { setError(caught.message); }
+      const image = await captureCameraFrame(video, track);
+      if (!mountedRef.current || session !== cameraSession.current) return;
+      addSources([image]); setSelected(photos.length); setError("");
+    } catch (caught) {
+      if (mountedRef.current && session === cameraSession.current) setError(caught.message);
+    } finally {
+      if (mountedRef.current && session === cameraSession.current) { shootingRef.current = false; setShooting(false); }
+    }
   };
   const selectFiles = async event => {
     try {
@@ -918,8 +962,26 @@ export function MultiCapture({ photos, setPhotos, title, subtitle, reference, on
       </ol>
     </section>}
     {reference !== undefined && <ReferencePreview reference={reference} current={selectedPhoto?.image} t={t}/>}
-    {cameraOpen && <div className="camera-panel"><video ref={videoRef} muted playsInline autoPlay/><div className="camera-actions"><Button icon={Camera} variant="primary" disabled={photos.length >= grenze} onClick={shoot}>{t("takePhoto")}</Button><Button icon={X} onClick={stopCamera}>{t("cameraStop")}</Button></div></div>}
-    {!cameraOpen && <div className="capture-actions"><Button icon={Camera} variant="primary" onClick={startCamera}>{t("cameraStart")}</Button><Button icon={Upload} onClick={() => fileRef.current?.click()}>{t("uploadPhotos")}</Button><input className="sr-only" ref={fileRef} type="file" accept="image/*" multiple aria-label={t("uploadPhotos")} onChange={selectFiles}/></div>}
+    {cameraStarting && <div className="capture-actions"><p role="status">{t("cameraStarting")}</p><Button icon={X} onClick={stopCamera}>{t("cameraStop")}</Button></div>}
+    {cameraOpen && <div className="camera-panel">
+      <video ref={videoRef} muted playsInline autoPlay onLoadedData={updateCameraFrame} onPlaying={updateCameraFrame}
+        onResize={updateCameraFrame} onWaiting={() => setFrameReady(false)} onEmptied={() => setFrameReady(false)}/>
+      <div className="camera-tools">
+        <p className="camera-frame-status" role="status">{frameReady && frameSize
+          ? `${t("cameraLive")} · ${frameSize.w} × ${frameSize.h} px` : t("cameraWaiting")}</p>
+        {controls.zoom && <label className="camera-zoom">{t("cameraZoom")} · {controls.zoom.value.toFixed(1)}×
+          <input type="range" aria-label={t("cameraZoom")} min={controls.zoom.min} max={controls.zoom.max}
+            step={controls.zoom.step} value={controls.zoom.value} disabled={controlBusy || shooting}
+            onChange={event => setCameraControl("zoom", Number(event.target.value))}/>
+        </label>}
+        {controls.torch && <Button icon={Lightbulb} aria-label={t("cameraTorch")} aria-pressed={controls.torchOn}
+          disabled={controlBusy || shooting} onClick={() => setCameraControl("torch", !controls.torchOn)}>
+          {controls.torchOn ? t("cameraTorchOff") : t("cameraTorchOn")}</Button>}
+        <p className="camera-guidance">{t("cameraDetailHint")}</p>
+      </div>
+      <div className="camera-actions"><Button icon={Camera} variant="primary" disabled={!frameReady || shooting || controlBusy || photos.length >= grenze} onClick={shoot}>{shooting ? t("cameraSaving") : t("takePhoto")}</Button><Button icon={X} onClick={stopCamera}>{t("cameraStop")}</Button></div>
+    </div>}
+    {!cameraOpen && !cameraStarting && <div className="capture-actions"><Button icon={Camera} variant="primary" onClick={startCamera}>{t("cameraStart")}</Button><Button icon={Upload} onClick={() => fileRef.current?.click()}>{t("uploadPhotos")}</Button><input className="sr-only" ref={fileRef} type="file" accept="image/*" multiple aria-label={t("uploadPhotos")} onChange={selectFiles}/></div>}
     {cameraError && <div className="alert alert-warning" role="status"><AlertTriangle size={17}/>{cameraError}</div>}
     {selectedPhoto ? <><ZoomMarkerViewer photo={selectedPhoto} onMarkersChange={updateMarkers} onFlaecheChange={updateFlaeche} maxMarkers={markerLimit} t={t}/>
       <div className="thumbnail-strip" aria-label={t("photos")}>{photos.map((photo, index) => <div className="thumbnail-wrap" key={photo.id}><button type="button" className={index === selected ? "thumbnail active" : "thumbnail"} onClick={() => setSelected(index)} aria-label={`${t("photo")} ${index + 1}${photo.lichtposition ? ` \u00b7 ${lichtName(photo.lichtposition)}` : ""}`}><img src={photo.image} alt=""/><span>{index + 1}</span>{photo.lichtposition && <small className="thumbnail-licht">{lichtName(photo.lichtposition)}</small>}</button><button type="button" className="thumbnail-remove" aria-label={`${t("removePhoto")} ${index + 1}`} onClick={() => setPhotos(current => current.filter(item => item.id !== photo.id))}><X size={14}/></button></div>)}</div>

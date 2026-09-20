@@ -67,7 +67,15 @@ Bedienweg nicht belegen.
 
 ```bash
 npm run build && npm run test:bedienlauf
+npm run build && npm run test:kameralauf   # 13 Pruefungen des Kamerawegs
 ```
+
+`test:kameralauf` faehrt den Aufnahmeweg im echten Chromium bei 390x844
+(iPhone-schmal). Die KAMERA selbst ist Chromiums synthetisches Testbild
+(`--use-fake-device-for-media-stream`): echte Videospur, echte Frames,
+aber keine Optik. Aufnahmequalitaet, reale Aufloesung, Zoom-/Licht-
+unterstuetzung und iPhone-Verhalten sind damit ausdruecklich NICHT
+geprueft. Der Geraetetest bleibt davon getrennt.
 
 Bei Änderungen an `analysisCore.js` zuerst `npm run test:core`; jede neue Urteilsregel erhält ein synthetisches, geseedetes Szenario. `Math.random` bleibt im gesamten Anwendungspfad verboten.
 

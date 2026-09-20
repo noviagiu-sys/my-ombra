@@ -679,6 +679,7 @@ Testaufteilung
                              Kandidatenliste an den echten 493 des Geraetelaufs,
                              Bedienweg und Rundlauf durch die Persistenz
                              (M1..M4, S1..S7, L1..L4, P1, K1..K5, U1..U5, R1/R2)
+  kameratest.mjs        ${zz("kameratest.mjs")}  Kamera-Bedienung mit kontrollierten Medien-APIs (jsdom)
   kalibrierung.mjs      ${zz("kalibrierung.mjs")}  getrennt gezaehlt, siehe unten
 
 Nachweiskette RC3 -> RC4

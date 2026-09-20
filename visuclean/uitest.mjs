@@ -662,7 +662,7 @@ ok("U4", "Login nennt Version und Demonstrator-Abgrenzung",
   const quelle = readFileSync(new URL("./src/App.jsx", import.meta.url), "utf8");
   const startBlock = quelle.slice(
     quelle.indexOf("const startCamera"),
-    quelle.indexOf("const shoot"));
+    quelle.indexOf("const shoot ="));
   const keinFrame = !/requestAnimationFrame[\s\S]{0,120}srcObject/.test(startBlock);
   const effekt = /useEffect\(\(\) => \{[\s\S]{0,400}srcObject = stream[\s\S]{0,400}\}, \[cameraOpen/.test(startBlock);
   const fehlerSichtbar = !/play\(\)\.catch\(\(\) => \{\}\)/.test(startBlock);

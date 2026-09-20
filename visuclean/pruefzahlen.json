@@ -7,7 +7,7 @@
     "kitest.mjs": 30,
     "v82test.mjs": 43,
     "persisttest.mjs": 18,
-    "uitest.mjs": 31,
+    "uitest.mjs": 32,
     "a11ytest.mjs": 8,
     "assessmenttest.mjs": 34,
     "scratchtest.mjs": 15,
@@ -27,6 +27,7 @@
     "tiefentest.mjs": 30,
     "schmutztest.mjs": 32,
     "pruefflaechetest.mjs": 35,
-    "schadenstest.mjs": 66
+    "schadenstest.mjs": 81,
+    "kameratest.mjs": 19
   }
 }

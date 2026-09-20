@@ -1,7 +1,7 @@
 {
   "name": "visuclean",
   "private": true,
-  "version": "8.3.0-rc.4.45",
+  "version": "8.3.0-rc.4.45-camera.1",
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -18,7 +18,7 @@
     "manifest:check": "node scripts/generate-manifest.mjs --check",
     "lint": "eslint .",
     "test": "node scripts/pruefzahlen.mjs",
-    "test:kette": "node coretest.mjs && node realimagetest.mjs && node enginetest.mjs && node kitest.mjs && node v82test.mjs && node persisttest.mjs && node uitest.mjs && node a11ytest.mjs && node assessmenttest.mjs && node scratchtest.mjs && node aitest.mjs && node integrationtest.mjs && node versiontest.mjs && node rc4gegenproben.mjs && node roitest.mjs && node ausschlusstest.mjs && node speicherpfadtest.mjs && node pdftest.mjs && node kalibrierung.mjs && node screeningtest.mjs && node mehrwinkeltest.mjs && node screeninganzeigetest.mjs && node sequenztest.mjs && node tiefentest.mjs && node schmutztest.mjs && node pruefflaechetest.mjs && node schadenstest.mjs",
+    "test:kette": "node coretest.mjs && node realimagetest.mjs && node enginetest.mjs && node kitest.mjs && node v82test.mjs && node persisttest.mjs && node uitest.mjs && node a11ytest.mjs && node assessmenttest.mjs && node scratchtest.mjs && node aitest.mjs && node integrationtest.mjs && node versiontest.mjs && node rc4gegenproben.mjs && node roitest.mjs && node ausschlusstest.mjs && node speicherpfadtest.mjs && node pdftest.mjs && node kalibrierung.mjs && node screeningtest.mjs && node mehrwinkeltest.mjs && node screeninganzeigetest.mjs && node sequenztest.mjs && node tiefentest.mjs && node schmutztest.mjs && node pruefflaechetest.mjs && node schadenstest.mjs && node kameratest.mjs",
     "test:zahlen": "node scripts/pruefzahlen.mjs --schreiben",
     "test:core": "node coretest.mjs",
     "test:real": "node realimagetest.mjs",
@@ -46,11 +46,13 @@
     "test:screeninganzeige": "node screeninganzeigetest.mjs",
     "test:kontrast": "node werkbank/kontrastmessung.mjs --selbsttest && node werkbank/riefenmerkmale.mjs --selbsttest && python3 werkbank/test_kontrastauswertung.py",
     "test:bedienlauf": "node werkbank/bedienlauf.mjs",
+    "test:kameralauf": "node werkbank/kameralauf.mjs",
     "test:sequenz": "node sequenztest.mjs",
     "test:tiefe": "node tiefentest.mjs",
     "test:schmutz": "node schmutztest.mjs",
     "test:flaeche": "node pruefflaechetest.mjs",
-    "test:schaden": "node schadenstest.mjs"
+    "test:schaden": "node schadenstest.mjs",
+    "test:kamera": "node kameratest.mjs"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

@@ -156,8 +156,32 @@ ok("V36", "Start-Selbsttest prueft Determinismus und Kalibrierabweichung <= 2 Pr
   selfTest.ok && selfTest.deterministic && selfTest.calibrationPass && selfTest.calibrationTolerance === .02);
 ok("V37", "Druckbares A4-Arbeitsblatt enthaelt alle neun Equipment-QR-Codes",
   (labelsHtml.match(/data-payload=/g) || []).length === 9 && labelsHtml.includes("7610000000011") && labelsHtml.includes("7610000000097"));
-ok("V38", "Fotoaufnahme erzwingt das 1-MB-Speicherbudget vor der Ablage",
-  appSource.includes("MAX_PHOTO_BYTES = 1024 * 1024") && appSource.includes("dataUrlBytes(result) <= MAX_PHOTO_BYTES"));
+/* Der Encoder liegt jetzt in cameraCapture.js. Das Budget wird ausgefuehrt
+   geprueft statt nur nach einer Konstanten in App.jsx zu suchen. */
+{
+  const { encodePhoto, MAX_PHOTO_BYTES } = await import("./src/cameraCapture.js");
+  const previousDocument = globalThis.document;
+  const source = { fixture: "uncompressed-frame" };
+  const oversized = "data:image/jpeg;base64," + "A".repeat(Math.ceil(1024 * 1024 * 4 / 3) + 4);
+  let attempts = 0, sameSource = true, alwaysOversized = false;
+  globalThis.document = { createElement: () => ({
+    getContext: () => ({ fillRect() {}, drawImage(value) { sameSource &&= value === source; } }),
+    toDataURL: () => { attempts++; return alwaysOversized || attempts < 3 ? oversized : "data:image/jpeg;base64,QUJD"; },
+  }) };
+  try {
+    const image = encodePhoto(source, 1920, 1080);
+    const fits = Math.ceil(image.split(",")[1].length * .75) <= 1024 * 1024;
+    const retried = attempts === 3;
+    alwaysOversized = true;
+    const blocked = await rejects(() => encodePhoto(source, 1920, 1080));
+    ok("V38", "Fotoaufnahme erzwingt das 1-MB-Speicherbudget vor der Ablage",
+      MAX_PHOTO_BYTES === 1024 * 1024 && fits && retried && sameSource && blocked,
+      "zu grosse JPEGs werden erneut aus der Quelle kodiert; dauerhaft zu grosses Bild wird abgewiesen");
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+  }
+}
 
 /* ── V39-V42 · Service Worker im PRUEFSTAND, nicht im Text ──────────────
    V30 liest den Quelltext. Das reicht, um zu sehen, DASS es einen Cache

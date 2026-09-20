@@ -1,8 +1,8 @@
 VisuClean - Browser/PWA-Demonstrator
 =========================================
 
-Version           8.3.0-rc.4.45
-Pflichtenheft     v2.5C / Korrekturkandidat 8.3.0-rc.4.45
+Version           8.3.0-rc.4.45-camera.1
+Pflichtenheft     v2.5C / Korrekturkandidat 8.3.0-rc.4.45-camera.1
 Basis             8.3.0-rc.4.31
                   Geschwisterlinie zu rc.4.6. Der Detektor aus jener Linie
                   wurde nicht uebernommen, sondern in rc.4.17 als
@@ -561,7 +561,7 @@ Analyse-Kern      src/analysisCore.js ist byte-identisch zu RC3
 Vier-Augen        Auslegung B, am 2026-09-08 vom Auftraggeber entschieden:
                   approvedBy.role === "QA Manager"
                   && approvedBy.username !== performedBy.username
-Paketdateien      126 (ohne MANIFEST.txt, node_modules und dist)
+Paketdateien      129 (ohne MANIFEST.txt, node_modules und dist)
 
 Abnahme
   npm ci          Lockfile-vollstaendige Neuinstallation
@@ -575,7 +575,7 @@ Testaufteilung
   kitest.mjs          30/30  Known-Issue-Leitplanken
   v82test.mjs         43/43  Domaene, Audit, PWA und Paket
   persisttest.mjs     18/18  AES, Append-only und Speichersperren
-  uitest.mjs          31/31  semantische UI-Struktur und Bildschirmfluss
+  uitest.mjs          32/32  semantische UI-Struktur und Bildschirmfluss
   a11ytest.mjs          8/8  axe-/Tastatur-Smokes
   assessmenttest.mjs  34/34  Pruefpunktstatus, Gesamtergebnisregeln, Ersatzpruefung
   scratchtest.mjs     15/15  Kratzerdokumentation, Vergleich, QA-Freigabe
@@ -611,7 +611,7 @@ Testaufteilung
                              Known-Issue-Dialog bis onSave, echter Datensatzbau,
                              echte Aufnahmemaske mit Wechsel ueber die
                              Miniaturleiste (R9a..R9e)
-  schadenstest.mjs      66/66  Schadensmeldung, Kandidatenerhalt und
+  schadenstest.mjs      81/81  Schadensmeldung, Kandidatenerhalt und
                              Markerbewertung: Marker auf erkannten Riefen und auf
                              Screening-Kandidaten, Schadensverdacht ohne
                              Detektortreffer und ohne Tiefe, Sperrwirkung im
@@ -619,6 +619,7 @@ Testaufteilung
                              Kandidatenliste an den echten 493 des Geraetelaufs,
                              Bedienweg und Rundlauf durch die Persistenz
                              (M1..M4, S1..S7, L1..L4, P1, K1..K5, U1..U5, R1/R2)
+  kameratest.mjs        19/19  Kamera-Bedienung mit kontrollierten Medien-APIs (jsdom)
   kalibrierung.mjs      7/7  getrennt gezaehlt, siehe unten
 
 Nachweiskette RC3 -> RC4
@@ -627,9 +628,9 @@ Nachweiskette RC3 -> RC4
   Ein Test, der nie rot war, gilt nicht als Nachweis einer Reparatur.
 
 Zaehlung
-  bestanden                635   Summe der 26 Suiten OHNE kalibrierung.mjs
-  kalibrierung.mjs           7   getrennt gezaehlt, NICHT in den 635 enthalten
-  Rohsumme aller 27 Skripte 642   635 + 7
+  bestanden                670   Summe der 27 Suiten OHNE kalibrierung.mjs
+  kalibrierung.mjs           7   getrennt gezaehlt, NICHT in den 670 enthalten
+  Rohsumme aller 28 Skripte 677   670 + 7
   Alle Zahlen dieses Abschnitts stammen aus pruefzahlen.json und werden bei
   jedem npm test gegen einen echten Lauf geprueft. Sie werden nicht getippt.
   fehlgeschlagen             0
@@ -715,42 +716,43 @@ b1a9489d400244ff6fb59c8d9cd320b0aae30f15cc8ceeb64bbeddf8d89728ba      5178  a11y
 241864a4f7a4bf2d2316d09332e7ba613fae3554d16da90b6a6f3a4ec6e9df20      8529  aitest.mjs
 77556fc129b8ec4ca6f41096e5c0654895739faedb1cc873fadf1041e7db0248     23868  assessmenttest.mjs
 875cd5bbf40f877570374ed3c522a42551358c85207d286b37428cc04a3ef788     14736  ausschlusstest.mjs
-db9b1b6bab36a10163de32e4b7be79f6c42edfb3e081b49d5c96eeda4f788427     82442  CHANGELOG.md
-7eb0246bb3f69953c49ce02cd5f3def2acc4dbed7844cc9bf6f4ccfc4dd50f92      8517  CLAUDE.md
+b995853c0e7aea4efdfb0c117d6ce49c2d5b5e0f1e7a3f7a64bac20f75398d16     84193  CHANGELOG.md
+b951f998731c8bcc162abbb5454db27f33eb0fd50b3c11dd16cae9204c55fa7b      8991  CLAUDE.md
 f62efc660c6c6fa5f410db850b28c742a4394118986531b64e83607db79ed7e2     11159  coretest.mjs
 654e2eaf771926520b9628c7ad7eeaf8578d4b30707de01dce2278c070c1b16b      1922  enginetest.mjs
-fe2d719725e7a13498b753e35ef858b9cc5f444267bb06d77a6a4fbaa9f38e8e      2557  eslint.config.js
+e5fb475cd23c0c2bfdef848c5d102ddf2e376445cdc6cd9bd5ff557e5f86c0c6      2608  eslint.config.js
 d7e85ca6b7c94f93813f0bd76283529a77684ef1c0301647b247070d7447a388      1060  index.html
 ff6c2a8ad2d605ddf03062a6bec598d9dcb3f1ce67880a4b64018f90d66ddd3e     11643  integrationtest.mjs
 6ac25bfea7e1c249a5b76acd3b91e12265c3e04506c21a2f4c61b08fa64b2e04      7843  kalibrierung.mjs
+4d8a846931024b5e1bde33ad57ae0fd92d2c2869d9d1757ba294817f449fe349      8468  kameratest.mjs
 6bd56702819d75e4a7be3120f3719f2bc87814443183ca65feb25805fd277216      8987  kitest.mjs
 dcec461cad84df1354094753718cc486c25d84b041f6e27f1e38642ae2228836     32928  mehrwinkeltest.mjs
-649fc94b6045cd9e974af8d0e2e4f740e6d641f6c635233fbb20ce5a84a10ab7    179806  package-lock.json
-c47dbe5dce8deb78daf3fdeafbe4a8415b2d1082079f9994749873ace002621f      3650  package.json
+30d0be25ba8407003ffc6f5db62f09c44126948a85a5f65d0fe8b07aea152f91    179824  package-lock.json
+e2c70e324a2185e0faa7e75fece8007c5777344644040dbc17c66a5bcbea09af      3779  package.json
 1db337a6babea9035859868e84f11fcbb9d7ae7647200589144c78431d929798     41927  pdftest.mjs
 871e8051dc9a11c8fe21892aaeb2d6661e24ae6c19cf8aa377b05af72e3e458e     11024  persisttest.mjs
 47dab5914c411b878a9f9b366bdefd05951aab69765c6f74db00da52eca70138     53981  pruefflaechetest.mjs
-4cdbb16fd30c34f92393c21a88ec8875aae3024f657228ffd5db39960748129a       878  pruefzahlen.json
+20d5a084881581c20e48156e64fe5344dea28adc66c112a7cfd7286f69a79d98       904  pruefzahlen.json
 d3e2902c08f3c742410fd8d6134df851b84a1255ed2502fb7812c3a8e16a15a5      2262  public/icon-192.png
 985a4e3c6f19f611d435821a1dd730b5a095e9318a5a2b2425f8e76eeac687cb      6873  public/icon-512.png
 c73dc08d41c9ec37e733ccacd473a3cd1048705ee79df646a4844be7975bf1cf       502  public/icon.svg
 01ae4023a86df4d5b3a72e6202e726c90838f54a25328ed79f96bedb7e583f13       734  public/manifest.webmanifest
 eadb719d582309567383dc473f85d816e629bd6c74f864ed88359391198c9787       598  public/screening.config.json
-ff887e47f142ece52230a2b8719b0818f10f95807d24a3ce4311124579a08ea0      4761  public/sw.js
-044589815dc096c81485bd95879c1fe01e0f8d5754e279dc754bef5189582aad     13152  public/VisuClean_QR_Etiketten_A4.html
+a14fd2bf22d4a8821ba8a52d763cd66324ea337ef254378ecab6fdd411288ea7      4770  public/sw.js
+f157a759b66dd8cd1e21e7b2407bf383689d65311ff6124c7ea1762bb3a97f7c     13242  public/VisuClean_QR_Etiketten_A4.html
 02c69c4c53b927c3bc7ec1a7aa726ccf2075236c63ef4ecd079bc49ef0981938      7930  RC3_ROTE_GEGENPROBEN.txt
 9f64a612275e43b6107f343dfab19f3c1f1dd53c69a104b6d9549182bea95c39     20986  rc4gegenproben.mjs
 e59efdb356622e8a9f61f05ed92cdc2ded17ab512ab295a1bf3d898cf7a189d9      9088  README.md
 b5f699b01e9514afdf5225fe4429277bcb31df3b832c4f7d0bd09ecbc446b549      1790  realimagetest.mjs
 e3ca5f8b74e9639c83730601ae609ccdb6f95dba89ec570d4909e98f991d191d      5137  roitest.mjs
-9c5f2884642cb213904efb44440c6ff907e480e01e7818769993434a71bbd1f5     69001  schadenstest.mjs
+deb0f643d7f95567c2169f33410cadd80f233ee9968c10815b0a7062fcb3ea5e     87555  schadenstest.mjs
 f9982a130d70aa106785dd59f3cc6783a1138ba921aa869cfd67bac33a8eb370     45403  schmutztest.mjs
 6f3b2a2d40114b501cc4b44f7a5ba3078a49cdbe15e2379b07ef1b41b7a72585      8995  scratchtest.mjs
 5240db4f3374e97dfcdc34429613a8aaad8c194c4cd2845119f901765a92bf52     63178  screeninganzeigetest.mjs
 1eeeadd8e29bbf620113d166e3ee25c3c476d89d87e0ccef75a956d58db5d6bb     35677  screeningtest.mjs
 daefcd752f80370dfc2c395cc09cbd10d06429fba9a894c0859f4592456ca96b      1893  scripts/generate-icons.mjs
 1e52007bb64de357c5484fc2d7a9fd910282568cfe7690d33da1418e4e1d6de7      3287  scripts/generate-labels.mjs
-cd5f6e9bf78d2ab112c04f47c955abb0591a72ce95bee311cedbea9701be52b5     51809  scripts/generate-manifest.mjs
+488eb8c4253ef7129b713ad058f622170b70ebe5a4548d283ca3d6cb76f89066     51914  scripts/generate-manifest.mjs
 7d390bd89d08801af71a21e3dedeb7cfaf16a1d51f016f6f7d2093f7677ad1cd     10287  scripts/pack-rc4.mjs
 cac4e4e8942778b290bed548d6349f237ebc26e5c534a58cf29e65a2f4e6ab37      6925  scripts/pruefzahlen.mjs
 51d4b58d13e28895a65ef995851272079999d1e1e489bcc2888d7d07fef37ae1     20323  sequenztest.mjs
@@ -758,24 +760,25 @@ e7882bab61e76e5b895bf026880d95205ea7737d8eb2018d28f0fa0d7f352194     50217  spei
 1169d86b4c34fda367cfe97dedc51bf7af7ee43cf0959792dd734b98a56a7d94      8517  src/aiContract.js
 ddc0b9fe3109895f994892aa285396074fcd3b5f608633d9368997c51c0f5793     16473  src/analysisCore.js
 b64949e4d3bfdd8bbf13e17c430b0300d65067cd86e92bade2dca97aa01e7e3d      7986  src/analysisEngines.js
-2d107a123a5b2a5520ac38952a155d4da86d5381f09a0c947119eafac9af8c29    213097  src/App.jsx
-9c365b3ade8029bbb2d8cbebb104963d94733d36aa4cac29f49aa773fb137dd7     31502  src/assessment.js
+5282d90cf3885bd8d9a9f47aafd38b6b7e85d24af9991ca17ed145f83e5bdbea    216543  src/App.jsx
+5beeaaf04fd7f7adc01e8cd3707dc4ef823830a0c1142d84d7024eb23363a18b     32826  src/assessment.js
 494d6af364da4c2e5a85c57185a5e57b7d92ff49ab7bbf256f09928e5f602c8a      5837  src/audit.js
 6febab3e1234a66b2223155a0e4df25e3f420fd11bf18fb35cc781ea6a11b121      8544  src/aufnahmeSequenz.js
+c67afde336fcae8a0571e69634fcb517cd31ec8a2c1041e4031c2108bf3edf09      5050  src/cameraCapture.js
 e9c7debe36f0c442a0496a91ead1ecfa67df9488883fff21765f2b29b099a639      5955  src/capturePaths.js
 df3bd122a056d7490be3a165fd8a46122e0df18ef87ed768d22ae226b4e6fe7e     27398  src/decision.js
 fc2b187a459c6cdd2d100d2e1ff4f4c246607e44f58cb5742f1877e4e9c0b3c3     26650  src/depthLimit.js
-f0964155035e958adb16b4738488d285488310e92cfe70c76ab4b4a3dfeb96c2     15258  src/domain.js
-66b4026d9374e4500c29e133088e1e297071458fae5e50afab2a5c5e78b76624     41760  src/i18n.js
+4a8c563dd7fb7ea1230e8e6b126d4eb390f759adf7751d651e0667cbf2f66fa5     15267  src/domain.js
+ebb585fdd7323fd1710f52fe0aca9640fbb028ea52186fd14f3adafa87c1fac1     42768  src/i18n.js
 b7cc8a48c697c84f4c6ebaa9f41d5c7bbd027521fcfecab2d65e4a6bfd9eef03     15551  src/inspectionArea.js
-e2e22edf47d9f4e461aff7c9bea8a03bf43ff20db8833ef599d6964bca236fb8     30152  src/inspectionRecord.js
+7d78df320e59392d479a20555c1508992e170c58bb19b6d17c32d6fb75f9549e     31572  src/inspectionRecord.js
 045f4f644b47e36fec79231e844ab4478090870b3de5d647b097d2c300a9dd8b      8495  src/knownIssues.js
 a8358212f8d88e036a46b887b9cc10762e648cd8727364e480d25267bee03d53     26358  src/lifecycle.js
 64a34e64be5781933d3f479151352578562635d09d18f993072def3dea7b8719       522  src/main.jsx
 3334a11ea8b8c5a689bc11aef7ae5469cb1ee18419550a665ddbbec82d895a4b     10704  src/multiAngle.js
 26a9e137e6ac5b6b1f86e51c767ab1d1bb7127e2979c5d6924f1d9fceaddb5d8     10342  src/overlayLayers.js
 db59f41aa7b8b9b55a7169f5d2ea036c062726c0a2ad0f6d1a18493772ed6094     38400  src/pdfExport.js
-7e10dcfb602f05f41fb4feac29a32a45db109f150b29b17b0163b1fb9cf37704     48602  src/persistence.js
+68e5aa7e2127459791cad05e02ce3296e1654f90ff6eab7e4ef9ba39522c7fdb     50215  src/persistence.js
 48124114e853a3ab96c4d8d26103feb0c584019f6e7d3d92043377988bdecf35      6391  src/references.js
 6227197293233e998030ce877205bd57f09b6e854a7ecfb8a9d24c7c5184ccbc     16940  src/registration.js
 3639b75faf86d9a9f3eeb39f5841cedc0766c4b675cb52b566ec3c9d782d85cd     26697  src/roi.js
@@ -784,7 +787,7 @@ db59f41aa7b8b9b55a7169f5d2ea036c062726c0a2ad0f6d1a18493772ed6094     38400  src/
 5a8ef163072885d6ef8594b985de2863078aa72bbc3f0300cf85fd9c5ead7bac     26208  src/scratchScreening.js
 8065495d49ca6d984f0d662759b18d52920f65558518f77642ebe7b091fcb3ee      6708  src/screeningConfig.js
 d4749ee174c9529dbb773bc34f827e097310b476ff53ea0cd94d6cfc05cd65ae      1539  src/selfTest.js
-bf3f772a48c1e9d2f9819a5e387582710e9d4c7f20e5ea3434ea24bd0e673fa9     35764  src/styles.css
+063702d14bdac853fe5213bff13dc2519654f2cf63f85f7925c6cd33d2f0f35f     36180  src/styles.css
 a0eac04e2f1906c712564d953797b0e8098ac06b126dcd1a0bfcbcce8f81e99d     16797  src/swabComparison.js
 427fa15d5c9ad8acf54c95a29551edce41321e47ce62b3956cb97c16f7a1dfc2      4703  src/textureFeatures.js
 d4fbf5478f8c6cd151c4bab039f4d8223760117e4f8d62b5b635188f9d9cf192      5725  src/verdictWording.js
@@ -794,9 +797,9 @@ d4fbf5478f8c6cd151c4bab039f4d8223760117e4f8d62b5b635188f9d9cf192      5725  src/
 127becc0f523fd580afb4bedf336c2f6de87542d9d56c43df28a200498ff36da    499253  tests/fixtures/real/wet-stainless-wide.png
 37bffbbe78ea2565398a8b19fa4f5852e5dd93bfeccd7f7486b747c945bb6a27    279034  tests/kandidaten-geraetelauf.json
 036928f728397b0523eb8aba3362cf1b11b57beeb29d74f19c36f65bbf0b2523     18276  tiefentest.mjs
-7e985609aebc3be231fb16b7ee2a5367f5f1f6cdbbcf3d71373cd72c136b8300     35420  uitest.mjs
+81d75d28b788d4674927e807de9aa054e97e8ba68beee2cb6e9460faa5280dcc     37383  uitest.mjs
 9177c538a9e43282f31542ebec56806a384b47e68e813467f500a48496aa4fd1      7513  V82_ACCEPTANCE.md
-785f3f6f4f4a58c8461ee04838251e2113eef522eb6bde4d6d7d8daf19d8caa1     17836  v82test.mjs
+ee532b2f9dbda488c6e6d0ce5fc3ede6e952e33199ac1bbb6d24e2abe48de6ee     19087  v82test.mjs
 be6ccb6d35cea15871e344cef134ffa0bd92aff15f89a3c4d7cd350bbf6fd686     10517  V83_G_KENNZEICHNUNG.md
 04757e804084944e878df40b37c27487433a80012650ccaa01eb69d49d531f8c      6894  V83_LIEFERUNG_RC445.md
 5a6fc972887e58a7a9234454d4bcd348d4ef38d466207c65e5b82c9870e2cbdc     20273  V83_MESSKAMPAGNE.md
@@ -824,6 +827,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855         0  werk
 e85b20fb4c92171e8b77d4a31287ab7899068283d5f6181761ba13d0888fe213      3622  werkbank/bildhilfen.mjs
 c1516e8b0f0fcfa22555e9090701c7e9a4ad0586850526b0b436d60dd34a3412      5903  werkbank/breitenmessung.mjs
 31f3fd5c61ede00fc9483a8c48d0973508916fa967ef1d4f0779aaddb8eb0021     10065  werkbank/fragmentvergleich.mjs
+65525e7155689833f15e477061b55bdd1696b2d5f0d85546702c48963a3851e0     20533  werkbank/kameralauf.mjs
 5a6830a0f97b164a574430823db948bd19cd914bed19ed38c0ce4bd8005bdcf0     12075  werkbank/kandidatenspur.mjs
 8f72d1bf1167f0f6c83b5dfd1727524dabedc568b604074ecc3675025984465e     15223  werkbank/kennzeichnung.mjs
 a352878cae5d7da0510a4ace9c43bff2123e77e159df000151a8484f67d92b58     19761  werkbank/KONTRAST_RIEFENTIEFE.md

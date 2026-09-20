@@ -30,10 +30,11 @@ export default [
     // fake-indexeddb bereit; werkbank/breitenmessung.mjs reicht Funktionen
     // an einen echten Browser durch (page.evaluate). ESLint soll diese
     // absichtlichen Globals kennen.
-    files: ["a11ytest.mjs", "persisttest.mjs", "screeninganzeigetest.mjs",
+    files: ["kameratest.mjs", "a11ytest.mjs", "persisttest.mjs", "screeninganzeigetest.mjs",
       "sequenztest.mjs", "schmutztest.mjs", "pruefflaechetest.mjs",
       "werkbank/breitenmessung.mjs", "werkbank/rahmenmessung.mjs",
-      "werkbank/kandidatenspur.mjs", "werkbank/bedienlauf.mjs", "schadenstest.mjs"],
+      "werkbank/kandidatenspur.mjs", "werkbank/bedienlauf.mjs", "werkbank/kameralauf.mjs",
+      "schadenstest.mjs"],
     languageOptions: {
       globals: { ...globals.browser },
     },

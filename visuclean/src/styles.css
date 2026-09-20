@@ -146,6 +146,12 @@ legend { padding: 0 5px; font-weight: 750; color: #dbe5f2; }
 .camera-panel video { width: 100%; height: auto; max-height: 62vh; object-fit: contain; display: block; }
 .camera-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; }
 .camera-actions .button { margin: 0; }
+.camera-tools { padding: 12px; display: grid; gap: 10px; color: var(--text); }
+.camera-frame-status { margin: 0; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.camera-zoom { display: grid; gap: 4px; font-size: .9rem; }
+.camera-zoom input { width: 100%; min-height: 44px; padding: 0; accent-color: var(--accent); }
+.camera-guidance { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+
 .capture-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
 .capture-actions .button { margin: 0; }
 
