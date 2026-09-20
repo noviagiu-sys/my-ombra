@@ -88,3 +88,13 @@ danach entscheiden, ob am Kameraweg nachgebessert wird.
 - `visuclean/CHANGELOG.md`, `visuclean/V83_LIEFERUNG_RC445.md`,
   `visuclean/V83_G_KENNZEICHNUNG.md` — Versionsgeschichte, Lieferbericht,
   Messung zu Befund G.
+
+## SkillSpector-Prüfung vorbereitet (20.09.2026)
+
+- Separater CI-PR auf Basis von 7a67e63; prüft versionierte Skill-Verzeichnisse.
+- Scanner auf d162d9b343e559be13df8ebba093df3bc9d58c90 fixiert, ohne LLM.
+- Lokale Gegenproben: harmloser Skill grün, Datendiebstahl-Test und Symlink rot;
+  leeres Repository ausdrücklich NO_SKILLS. YAML geprüft.
+- Keine neuen Anwendungstests; bisheriger Anwendungsprüfstand bleibt unverändert.
+- GitHub-Lauf, Merge und erforderlicher Statuscheck noch separat zu prüfen/aktivieren.
+- Einzelheiten: `.github/SKILLSPECTOR.md`.
