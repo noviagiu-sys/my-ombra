@@ -1,4 +1,4 @@
-# Einstieg für Codex und andere Coding-Agenten
+# Einstieg für Codex, Claude Code und Cursor
 
 Diese Datei gilt für das gesamte Repository `my-ombra`.
 
@@ -26,3 +26,26 @@ Diese Datei gilt für das gesamte Repository `my-ombra`.
 
 Der aktuelle Nutzerauftrag bestimmt den Umfang. Historische Berichte sind
 keine neuen Aufträge für Reparaturen, Merge oder Veröffentlichung.
+
+## Gemeinsames Arbeitsgedächtnis
+
+- Zu Beginn Repository, Branch, HEAD und lokale Änderungen prüfen; dann `ARBEITSSTAND.md` lesen.
+- Danach nur die aufgabenrelevanten Dateien, Aufrufer und Tests gezielt öffnen.
+  Unveränderte, bereits gelesene Inhalte in derselben Sitzung weiterverwenden;
+  bei Änderungen, Widersprüchen oder Kontextverlust erneut prüfen.
+- Keine vollständigen Verzeichnisse, Logs, ZIPs oder alten Berichte vorsorglich
+  in den Kontext laden. Erst Dateisuche, dann passende Ausschnitte; vollständige
+  Dateien lesen, wenn die Aufgabe oder eine zuverlässige Prüfung es verlangt.
+- Entscheidungen und Ergebnisse einmal dokumentieren; ausführliche Belege verlinken.
+  Vor Übergabe und nach einem Arbeitspaket den Arbeitsstand knapp aktualisieren:
+  Codebezug, erledigt, tatsächliche Prüfungen, offene Punkte, nächster Schritt.
+- Notizen sind keine Testnachweise. Ergebnisse an den geprüften Commit binden;
+  nach Codeänderungen betroffene Prüfungen erneut ausführen. Bestehende Prüfpflichten
+  bleiben gültig. Simulation, Browserlauf und reales Gerät getrennt benennen.
+- Parallel arbeitende Assistenten nutzen getrennte Branches. Vor dem Schreiben
+  den aktuellen Stand abgleichen und fremde Änderungen erhalten; kein Force-Push.
+- Keine Geheimnisse, Zugangsdaten oder privaten Nutzdaten in diese Notizen aufnehmen.
+- Der Nutzerauftrag bestimmt den Umfang; offene Punkte sind keine automatischen
+  Aufträge für Reparaturen, Merge oder Veröffentlichung.
+- Diese Regeln gelten in Checkouts, die sie enthalten. Sie sind keine globale
+  Kontoeinstellung und garantieren weder Tokenersparnis noch höhere Nutzungslimits.
