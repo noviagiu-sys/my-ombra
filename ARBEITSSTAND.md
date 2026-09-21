@@ -1,90 +1,103 @@
 # Arbeitsstand
 
-**Stand:** 20.09.2026 · Repository `noviagiu-sys/my-ombra` · Branch
-`claude/visuclean-fortsetzung-uaf0xf` · Commit `b5a4a39`
+**Stand:** 21.09.2026. Gearbeitet wurde ausschließlich an **VisuClean**.
+Über Ombra und Trägerlotse sagt dieser Arbeitsstand nichts.
 
-Zuletzt gearbeitet wurde ausschließlich an **VisuClean** (`visuclean/`).
-Über Ombra und Trägerlotse sagt dieser Arbeitsstand nichts aus.
+**Achtung, zwei Repositories.** Der maßgebliche VisuClean-Code liegt
+**nicht** hier, sondern in `noviagiu-sys/Desktopvisuclean-standalone`.
+Dort hängt auch die Vorschau-URL des Auftraggebers. `my-ombra/visuclean/`
+ist die Arbeitskopie eines älteren Stands (ohne Befund G Stufe 2, ohne die
+Codex-Kameraänderungen) — **dort nicht weiterentwickeln.**
+
+| | |
+|---|---|
+| Code, maßgeblich | `Desktopvisuclean-standalone`, Branch `claude/kritisches-licht`, Commit `a8d0afa` |
+| Kette dorthin | `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa` (Claude) |
+| Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
+| Version | `8.3.0-rc.4.45-camera.1` (vor Veröffentlichung anheben) |
 
 ## Erledigt
 
-1. **`349a32b`** — VisuClean-Quellstand `8.3.0-rc.4.45` importiert,
-   unverändert aus dem Übergabepaket (SHA-256 `cf747175…`). Ohne private
-   Belege und Exporte.
-2. **`9b5891f`** — zwei Restfehler der unabhängigen Gegenprüfung repariert:
-   *Vollständigkeit* (eine unvollständige Prüfpunktliste ergab „Intakt:
-   PASS"; jetzt behält FAIL Vorrang, sonst NICHT BEWERTBAR) und
-   *fortsetzbare Beurteilung* (eine vertagte Beurteilung ließ sich nicht
-   abschließen; jetzt fortsetzbar, die frühere bleibt in
-   `klaerungsverlauf` append-only erhalten, eine abgeschlossene bleibt
-   unantastbar). Begründungen in den Quellkommentaren und im PR.
-3. **`b5a4a39`** — Kamerapaket integriert (17 Dateien, neu u. a.
-   `src/cameraCapture.js`, `kameratest.mjs`), Version
-   `8.3.0-rc.4.45-camera.1`; als Differenz gegen die mitgelieferte Basis,
-   nicht durch Kopieren. Generierte Dateien aus diesem Stand neu erzeugt.
-   Neu: `werkbank/kameralauf.mjs`.
+1. **rc.4.45 importiert** (`349a32b`), unverändert aus dem Übergabepaket.
+2. **Zwei Restfehler der Gegenprüfung** (`9b5891f`): unvollständige
+   Prüfpunktliste ergab „Intakt: PASS" (jetzt FAIL-Vorrang, sonst NICHT
+   BEWERTBAR); eine vertagte QA-Beurteilung ließ sich nicht abschließen
+   (jetzt fortsetzbar, `klaerungsverlauf` append-only).
+3. **Kamerapaket integriert** (`b5a4a39` hier, `ebf3a8b` im Code-Repo),
+   dazu `werkbank/kameralauf.mjs` — 13 Prüfungen des Aufnahmewegs im
+   echten Chromium bei 390×844, Kamera simuliert.
+4. **Doku-Übergabe** (`3c70f5f`, `7a67e63`): diese Datei, Wurzel-CLAUDE.md,
+   `AGENTS.md` für Codex.
+5. **Kritisches Licht** (`a8d0afa`) — siehe unten.
 
-## Dokumentation / Agenten-Einstieg
+## Zuletzt: kritisches Licht (`a8d0afa`)
 
-- `3c70f5f`: Arbeitsstand und gemeinsame Regeln in der Wurzel-CLAUDE.md.
-- Codex-Einstieg ergänzt: `AGENTS.md` verweist auf diesen Arbeitsstand,
-  die Wurzel-CLAUDE.md und bei VisuClean auf `visuclean/CLAUDE.md`.
-  Nur Dokumentation; Verweise und Diff geprüft, keine neuen App-Testläufe.
-  Der oben genannte geprüfte Anwendungsstand bleibt `b5a4a39`.
+Gerätetest vom 21.09.: Die Linse wurde **absichtlich verdeckt**, um die
+Erkennung schlechter Aufnahmebedingungen zu prüfen. Die Gesamtsperre griff
+richtig (`CRITICAL_LIGHT`) — daneben standen aber „Verdacht auf nasse
+Oberfläche" (45) und „Rückstandsverdacht, 80,8 % warme Pixel" (100) als
+Teilebefunde. Die Sperre hing nur am Gesamtergebnis, die Prüfpunkte
+rechneten unabhängig weiter.
 
-## Entscheidungen
+Repariert: Unter der kritischen Lichtschwelle trägt kein automatischer
+Prüfpunkt mehr eine Aussage (`NOT_ASSESSABLE_CRITICAL_LIGHT`). Der Text
+fordert zur Handlung auf, ohne eine Ursache zu behaupten — gemessen wird
+Helligkeit, ein verdecktes Objektiv ist davon nicht von einem dunklen Raum
+zu unterscheiden. Kandidaten werden gekennzeichnet statt gelöscht. Die
+Lichtpositionen heißen „Aufgenommen" statt „Bestanden" (eigener Schlüssel
+DE/EN). `lightLevel()` steht jetzt einmalig in `capturePaths.js`.
 
-- Beide Reparaturen zuerst **rot** gefahren (F11/F14, U31,
-  N2–N5/N7/N9/N10); die Gegenproben F12/F13/F15 und N1/N6/N8 blieben grün.
-- Der Kameralauf prüft mit Chromiums synthetischer Kamera. Gegenprobe am
-  Stand **ohne** Kamerapaket: sofortiger Abbruch bei der ersten Prüfung —
-  der Lauf misst also wirklich den neuen Aufnahmeweg.
-- Keine neue QA-Grundsatzarbeit: G Stufe 0/1 und die gemeinsame
-  Befundschnittstelle sind **nicht** begonnen (Vorgabe des Auftraggebers:
-  Schwerpunkt Kamera und Erkennung).
+Unverändert: Gesamtsperre, gut beleuchtete Aufnahmen, manuelle
+Feststellungen, Codex' Kameraänderungen.
+
+Zuerst rot: CL1/CL4/CL5/CL6, U32/U34/U35/U37. Gegenproben CL2/CL3/U33/U36
+blieben grün. Sabotageprobe bestanden. Ein eigener Entwurfsfehler ist als
+Gegenprobe festgehalten (CL7): ein *fehlender* Helligkeitswert darf nicht
+als gemessene Dunkelheit gelten.
 
 ## Ausgeführte Prüfungen
 
-Alle am Stand `b5a4a39`, Version `8.3.0-rc.4.45-camera.1`:
+Alle am Stand `a8d0afa`:
 
 | Prüfung | Ergebnis |
 |---|---|
 | `npm ci` | 0 gemeldete Schwachstellen |
 | `npm run verify` | Exit 0 |
-| `manifest:check` nach Build | 129 Dateien reproduzierbar |
-| `npm test` | 670 Prüfungen in 28 Suiten (7 Kalibrierungsfälle getrennt) |
+| `manifest:check` nach Build | 133 Dateien reproduzierbar |
+| `npm test` | 702 Prüfungen in 29 Suiten (7 Kalibrierungsfälle getrennt) |
 | `npm run test:bedienlauf` | 31/31 im echten Chromium |
 | `npm run test:kameralauf` | 13/13 im echten Chromium, Kamera simuliert |
 
-**Nicht geprüft:** reale iPhone-Kamera, Aufnahmequalität,
-Geräteunterstützung für Zoom und Licht, reale Erkennungsleistung.
+**Nicht geprüft:** reale iPhone-Kamera, Aufnahmequalität, Zoom- und
+Lichtunterstützung am Gerät, reale Erkennungsleistung. Ob einzelne
+Kandidaten aus zu dunklen Bildern Rauschen sind, ist offen — deshalb
+werden sie gekennzeichnet, nicht gelöscht.
 
 ## Offen
 
-- **Auslieferung unbestätigt.** Derselbe Arbeitsstand wurde als Commit
-  `ebf3a8b` auf `claude/session-1ocbg3` im Repository
-  `noviagiu-sys/Desktopvisuclean-standalone` gepusst (dort zusätzlich
-  Befund G Stufe 2 mit `maskentest.mjs`; dort 679 Prüfungen in 29 Suiten,
-  Manifest 133 Dateien, verify Exit 0, 31/31 und 13/13). Ob die Vercel-
-  Branch-Vorschau die neue Version ausliefert, ist **nicht bestätigt**:
-  die Netzwerkrichtlinie dieser Umgebung blockiert `vercel.app`. Eine
-  Deployment-ID liegt nicht vor.
-- **Gerätetest am iPhone steht aus** (Peppe). Kurzanleitung in PR
-  `my-ombra#3`.
-- **Befund G Stufe 0/1** und die gemeinsame Befundschnittstelle offen;
-  in diesem Repository fehlt `maskentest.mjs` ganz. Ebenso offen: P5
-  (Feuchte-Vergleichsdetektor), P6 (Messkampagne, drei Lichtpositionen).
+- **Veröffentlichung ist ein eigener Schritt.** `claude/kritisches-licht`
+  ist ein Entwicklungsbranch; die Vorschau-URL hängt an
+  `claude/session-1ocbg3` (steht auf `ebf3a8b`). Vorher App- und
+  Service-Worker-Version anheben, sonst bekommen Geräte den Stand nicht.
+  Die Netzwerkrichtlinie dieser Umgebung blockiert `vercel.app`; eine
+  Auslieferung lässt sich von hier **nicht** bestätigen.
+- **Gerätetest der Reparatur steht aus:** dunkle Aufnahme wiederholen und
+  prüfen, ob Trocken und Sauber jetzt „nicht bewertbar" zeigen.
+- **Sauberkeit möglicherweise lichtabhängig.** In beiden brauchbaren
+  Vorgängen vom 21.09. fiel „Sauber" auf jedem Foto durch (Index 100). Die
+  App nennt die Alternative selbst: warme Lichtfarbe statt Kontamination.
+  Offen bis zu einer Gegenprobe unter anderem Licht.
+- **Befund G Stufe 0/1** und die gemeinsame Befundschnittstelle; ältere
+  Punkte P5 (Feuchte-Vergleichsdetektor) und P6 (Messkampagne).
 
 ## Nächster konkreter Schritt
 
-Rückmeldung abwarten, welche Version unter der Vorschau-URL angezeigt wird
-(erwartet `8.3.0-rc.4.45-camera.1`), und den Gerätebefund auswerten. Erst
-danach entscheiden, ob am Kameraweg nachgebessert wird.
+Entscheidung abwarten, wie `claude/kritisches-licht` und die Codex-Kette
+zusammengeführt und veröffentlicht werden. Parallel: Gegenprobe zum
+Sauberkeitsbefund unter anderem Licht.
 
 ## Ausführliche Berichte
 
-- PR `noviagiu-sys/my-ombra#3` — vollständige Beschreibung der Integration.
+- PR `noviagiu-sys/my-ombra#3` — Integration des Kamerapakets.
 - `visuclean/CLAUDE.md` — fachliche Leitplanken, unverändert gültig.
-- `visuclean/CHANGELOG.md`, `visuclean/V83_LIEFERUNG_RC445.md`,
-  `visuclean/V83_G_KENNZEICHNUNG.md` — Versionsgeschichte, Lieferbericht,
-  Messung zu Befund G.
+- `CHANGELOG.md` im Code-Repo — Versionsgeschichte und Befunde im Detail.
