@@ -11,8 +11,8 @@ Codex-Kameraänderungen) — **dort nicht weiterentwickeln.**
 
 | | |
 |---|---|
-| Code, maßgeblich | `Desktopvisuclean-standalone`, Branch `claude/kritisches-licht`, Commit `a8d0afa` |
-| Kette dorthin | `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa` (Claude) |
+| Code, maßgeblich | `Desktopvisuclean-standalone`, Branch `claude/kritisches-licht`, Commit `208cf1b` |
+| Kette dorthin | `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`, `208cf1b` (Claude) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 | Version | `8.3.0-rc.4.45-camera.1` (vor Veröffentlichung anheben) |
 
@@ -28,7 +28,8 @@ Codex-Kameraänderungen) — **dort nicht weiterentwickeln.**
    echten Chromium bei 390×844, Kamera simuliert.
 4. **Doku-Übergabe** (`3c70f5f`, `7a67e63`): diese Datei, Wurzel-CLAUDE.md,
    `AGENTS.md` für Codex.
-5. **Kritisches Licht** (`a8d0afa`) — siehe unten.
+5. **Kritisches Licht** (`a8d0afa`) und die zwei Restfehler daraus
+   (`208cf1b`) — siehe unten.
 
 ## Zuletzt: kritisches Licht (`a8d0afa`)
 
@@ -47,6 +48,13 @@ zu unterscheiden. Kandidaten werden gekennzeichnet statt gelöscht. Die
 Lichtpositionen heißen „Aufgenommen" statt „Bestanden" (eigener Schlüssel
 DE/EN). `lightLevel()` steht jetzt einmalig in `capturePaths.js`.
 
+**Zwei Restfehler daraus** hat die Gegenprüfung gefunden, beide behoben
+(`208cf1b`): Die PDF-Zusammenfassung las weiter den Rohbefund und schrieb
+„Sauber: FAIL", wo der Bildschirm „nicht bewertbar" zeigte — sie liest
+jetzt `kriteriumKurz`, dieselbe Quelle. Und der Dunkelhinweis hing an
+`aggregate.lm`, einem Wert über alle Fotos; er hängt jetzt an der
+Helligkeit des einzelnen Fotos. Der Hinweis steht zusätzlich im Protokoll.
+
 Unverändert: Gesamtsperre, gut beleuchtete Aufnahmen, manuelle
 Feststellungen, Codex' Kameraänderungen.
 
@@ -57,14 +65,14 @@ als gemessene Dunkelheit gelten.
 
 ## Ausgeführte Prüfungen
 
-Alle am Stand `a8d0afa`:
+Alle am Stand `208cf1b`:
 
 | Prüfung | Ergebnis |
 |---|---|
 | `npm ci` | 0 gemeldete Schwachstellen |
 | `npm run verify` | Exit 0 |
 | `manifest:check` nach Build | 133 Dateien reproduzierbar |
-| `npm test` | 702 Prüfungen in 29 Suiten (7 Kalibrierungsfälle getrennt) |
+| `npm test` | 706 Prüfungen in 29 Suiten (7 Kalibrierungsfälle getrennt) |
 | `npm run test:bedienlauf` | 31/31 im echten Chromium |
 | `npm run test:kameralauf` | 13/13 im echten Chromium, Kamera simuliert |
 
@@ -92,9 +100,9 @@ werden sie gekennzeichnet, nicht gelöscht.
 
 ## Nächster konkreter Schritt
 
-Entscheidung abwarten, wie `claude/kritisches-licht` und die Codex-Kette
-zusammengeführt und veröffentlicht werden. Parallel: Gegenprobe zum
-Sauberkeitsbefund unter anderem Licht.
+`208cf1b` geht in die unabhängige Prüfung durch Codex. Danach erst:
+Version anheben, bereitstellen, Gerätetest. Nicht vorher zusammenführen
+oder veröffentlichen.
 
 ## Ausführliche Berichte
 
