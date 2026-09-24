@@ -1,6 +1,6 @@
 # Arbeitsstand
 
-**Stand:** 22.09.2026. Gearbeitet wurde ausschließlich an **VisuClean**.
+**Stand:** 24.09.2026. Gearbeitet wurde ausschließlich an **VisuClean**.
 Über Ombra und Trägerlotse sagt dieser Arbeitsstand nichts.
 
 **Achtung, zwei Repositories.** Der maßgebliche VisuClean-Code liegt
@@ -32,38 +32,26 @@ Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
 
 ## Kritisches Licht (`a8d0afa`, `208cf1b`)
 
-Gerätetest vom 21.09.: Die Linse wurde **absichtlich verdeckt**, um die
-Erkennung schlechter Aufnahmebedingungen zu prüfen. Die Gesamtsperre griff
-richtig (`CRITICAL_LIGHT`) — daneben standen aber „Verdacht auf nasse
-Oberfläche" (45) und „Rückstandsverdacht, 80,8 % warme Pixel" (100) als
-Teilebefunde. Die Sperre hing nur am Gesamtergebnis.
-
-Repariert: Unter der kritischen Lichtschwelle trägt kein automatischer
-Prüfpunkt mehr eine Aussage (`NOT_ASSESSABLE_CRITICAL_LIGHT`). Der Text
-fordert zur Handlung auf, ohne eine Ursache zu behaupten — gemessen wird
-Helligkeit, ein verdecktes Objektiv ist davon nicht von einem dunklen Raum
-zu unterscheiden. Kandidaten werden gekennzeichnet statt gelöscht. Die
-Lichtpositionen heißen „Aufgenommen" statt „Bestanden". `lightLevel()`
-steht einmalig in `capturePaths.js`.
-
-`208cf1b` behob zwei Folgefehler: Die PDF-Zusammenfassung las weiter den
-Rohbefund („Sauber: FAIL", wo der Bildschirm „nicht bewertbar" zeigte) —
-sie liest jetzt `kriteriumKurz`. Und der Dunkelhinweis hing an
-`aggregate.lm`, einem Wert über alle Fotos; er hängt jetzt am einzelnen
-Foto und steht zusätzlich im Protokoll.
+Gerätetest 21.09.: Die Linse wurde **absichtlich verdeckt**. Die
+Gesamtsperre griff richtig (`CRITICAL_LIGHT`), daneben standen aber
+Teilebefunde — die Sperre hing nur am Gesamtergebnis. Repariert: Unter
+der kritischen Lichtschwelle trägt kein automatischer Prüfpunkt mehr eine
+Aussage (`NOT_ASSESSABLE_CRITICAL_LIGHT`). Der Text fordert zur Handlung
+auf, ohne eine Ursache zu behaupten — gemessen wird Helligkeit, ein
+verdecktes Objektiv ist davon nicht von einem dunklen Raum zu
+unterscheiden. Kandidaten werden gekennzeichnet statt gelöscht, die
+Lichtpositionen heißen „Aufgenommen" statt „Bestanden", `lightLevel()`
+steht einmalig in `capturePaths.js`. `208cf1b` zog die PDF-Zusammenfassung
+auf `kriteriumKurz` nach und hängte den Dunkelhinweis ans einzelne Foto
+statt an den Mittelwert über alle Fotos.
 
 ## Ausgeführte Prüfungen — und wofür sie gelten
 
-Alle Zahlen unten wurden **am Stand `208cf1b`** gemessen:
-
-| Prüfung | Ergebnis |
-|---|---|
-| `npm ci` | 0 gemeldete Schwachstellen |
-| `npm run verify` | Exit 0 |
-| `manifest:check` nach Build | 133 Dateien reproduzierbar |
-| `npm test` | 706 Prüfungen in 29 Suiten (7 Kalibrierungsfälle getrennt) |
-| `npm run test:bedienlauf` | 31/31 im echten Chromium |
-| `npm run test:kameralauf` | 13/13 im echten Chromium, Kamera simuliert |
+Alle Zahlen wurden **am Stand `208cf1b`** gemessen: `npm ci` ohne
+gemeldete Schwachstelle, `npm run verify` Exit 0, `manifest:check` 133
+Dateien reproduzierbar, `npm test` 706 Prüfungen in 29 Suiten,
+`test:bedienlauf` 31/31 und `test:kameralauf` 13/13 im echten Chromium
+mit simulierter Kamera.
 
 **Der ausgelieferte Stand `a8dcf67` liegt drei Commits weiter** (PDF-Fix
 `59eb545`, Release camera.2, Rückbau des Bildtipp-Auslösers samt Release
@@ -71,9 +59,42 @@ camera.3). Diese drei sind **nicht von dieser Sitzung geprüft** — die
 Zahlen oben gelten nicht für sie.
 
 **Grundsätzlich nicht geprüft:** reale iPhone-Kamera, Aufnahmequalität,
-Zoom- und Lichtunterstützung am Gerät, reale Erkennungsleistung. Ob
-einzelne Kandidaten aus zu dunklen Bildern Rauschen sind, ist offen —
-deshalb werden sie gekennzeichnet, nicht gelöscht.
+Zoom- und Lichtunterstützung am Gerät, reale Erkennungsleistung.
+
+## Gemessen 24.09: woran „Sauber" und „Trocken" wirklich hängen
+
+Werkbank-Messung gegen `computeFeatures` / `buildVerdicts` am Stand
+`a8dcf67`, mit **synthetischen** Flächen. Das ist die Antwortkurve des
+Algorithmus, **keine** Erkennungsleistung an echten Teilen.
+
+- **Die Belichtung allein kippt „Sauber".** Gleiche Fläche, gleiche
+  Lichtfarbe: 54 % Helligkeit → PASS, 70 % → FAIL mit 74,5 % warmen
+  Pixeln. `(rn − bn) > 0,08` ist eine absolute Schwelle; der Restfarbstich
+  nach der **halben** Grauwelt-Korrektur wächst aber proportional zur
+  Helligkeit: `rn − bn = 0,5 · P · (Ar − Ab)`.
+- **Ein heller warmer Reflex auf 5 % der Fläche genügt für FAIL**
+  (`LOCAL_RESIDUE`), 18 % ergeben `ORGANIC_RESIDUE`. Helle Pixel werden
+  berechnet (`maskBright`), aber nie aus der Warmzählung ausgenommen.
+- **Der vorhandene Lichthinweis kann das nicht auffangen:** er hängt an
+  `warmBlockFrac > 0,8`. Der Gerätedatensatz vom 22.09. hat 169 von 920
+  Warmzonen = 18,4 %. Ein örtlicher Reflex löst ihn nie aus.
+- **Voller Weißabgleich räumt den Fehlalarm ab und öffnet einen Fehler in
+  der Gegenrichtung.** Echter Rückstand bleibt bis 75 % Bedeckung rot, bei
+  100 % Bedeckung kippt er auf PASS — genau der Fall „kleines Teil füllt
+  das Bild".
+- **Tropfen:** 60 Tropfen auf 6 % der Fläche ergeben PASS, solange ihr
+  Glanz unter +0,30 Helligkeit bleibt; darüber springen die hellen Pixel
+  von 0,0 % auf 5,7 % und das Tor greift. Der Texturweg
+  (`gradMean > 0,055` **und** `edgeFrac > 8 %`) erreicht dabei 0,034 und
+  1,6 % und trägt nie. Streiflicht erhöht die Chance auf Glanz, schließt
+  die Lücke aber nicht: vollständige Sequenz ohne Glanz ergibt wieder
+  PASS.
+- **Die Befundstärke sagt weniger, als sie aussieht:** `wf · 700`,
+  gedeckelt auf 100. Ab 14,3 % warmen Pixeln steht immer 100 — 19 % über
+  der FAIL-Schwelle von 12 %.
+
+Messskript `werkbank/lichtfarbe.mjs` ist geschrieben und ausgeführt, aber
+**nirgends committet** — es gehört in `Desktopvisuclean-standalone`.
 
 ## Offen
 
@@ -81,11 +102,15 @@ deshalb werden sie gekennzeichnet, nicht gelöscht.
   prüfen, ob Trocken und Sauber „nicht bewertbar" zeigen; helles und
   dunkles Foto zusammen, Warnung richtig zugeordnet; PDF gegen
   Ergebnisansicht.
-- **Sauberkeit möglicherweise lichtabhängig.** Am 21.09. fiel „Sauber" in
-  beiden brauchbaren Vorgängen auf jedem Foto durch (Index 100). Die App
-  nennt die Alternative selbst: warme Lichtfarbe statt Kontamination.
-  Nächster Schritt dazu: dieselbe unveränderte Edelstahlstelle unter
-  verschiedenen Lichtbedingungen aufnehmen.
+- **Reparatur der Warmpixel-Prüfung** — beauftragt ist sie nicht. Vorschlag
+  in dieser Reihenfolge: helle und gesättigte Pixel aus der Warmzählung
+  ausnehmen, die Chroma-Schwelle auf die Helligkeit beziehen, und einen
+  flächigen Farbstich zu NICHT BEWERTBAR führen statt zu FAIL oder PASS.
+  Die Grauwelt-Stärke **nicht** anheben (siehe Messung oben).
+- **Unabhängiger Anker fehlt.** Aus einem einzelnen Bild ohne neutrale
+  Referenz sind warme Lichtfarbe und warmer Rückstand nicht trennbar.
+  Kandidaten: Graukarte im Bild, oder Referenzaufnahme des sauberen Teils
+  unter demselben Licht.
 - **Befund G Stufe 0/1** und die gemeinsame Befundschnittstelle; ältere
   Punkte P5 (Feuchte-Vergleichsdetektor) und P6 (Messkampagne).
 
@@ -106,8 +131,9 @@ deshalb werden sie gekennzeichnet, nicht gelöscht.
 
 ## Nächster konkreter Schritt
 
-Gerätetest der Lichtreparatur an camera.3, danach die Lichtabhängigkeit
-des Sauberkeitsbefunds messen.
+Die Lichtabhängigkeit ist gemessen (Abschnitt oben). Offen ist die
+Entscheidung des Auftraggebers, ob die Warmpixel-Prüfung repariert wird —
+ohne Freigabe wird am Erkennungskern nichts geändert.
 
 ## Ausführliche Berichte
 
