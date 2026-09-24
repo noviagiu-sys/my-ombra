@@ -1,6 +1,6 @@
 # Arbeitsstand
 
-**Stand:** 24.09.2026. Gearbeitet wurde ausschließlich an **VisuClean**.
+**Stand:** 24.09.2026, abends. Gearbeitet wurde ausschließlich an **VisuClean**.
 Über Ombra und Trägerlotse sagt dieser Arbeitsstand nichts.
 
 **Achtung, zwei Repositories.** Der maßgebliche VisuClean-Code liegt
@@ -10,8 +10,9 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 
 | | |
 |---|---|
-| Code, maßgeblich | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
+| Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
+| Code, neu | Branch `claude/erkennung-licht-tropfen`, Commit `339850c` — **nicht zusammengeführt, nicht ausgeliefert** |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
 Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
@@ -29,6 +30,7 @@ Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
 4. **Doku-Übergabe** (`3c70f5f`, `7a67e63`): diese Datei, Wurzel-CLAUDE.md,
    `AGENTS.md` für Codex.
 5. **Kritisches Licht** (`a8d0afa`) und zwei Restfehler daraus (`208cf1b`).
+6. **Licht, Reflexe, Tropfen** (`339850c`) — Abschnitt unten.
 
 ## Kritisches Licht (`a8d0afa`, `208cf1b`)
 
@@ -61,40 +63,42 @@ Zahlen oben gelten nicht für sie.
 **Grundsätzlich nicht geprüft:** reale iPhone-Kamera, Aufnahmequalität,
 Zoom- und Lichtunterstützung am Gerät, reale Erkennungsleistung.
 
-## Gemessen 24.09: woran „Sauber" und „Trocken" wirklich hängen
+## Licht, Reflexe, Tropfen (`339850c`, freigegeben 24.09.)
 
-Werkbank-Messung gegen `computeFeatures` / `buildVerdicts` am Stand
-`a8dcf67`, mit **synthetischen** Flächen. Das ist die Antwortkurve des
-Algorithmus, **keine** Erkennungsleistung an echten Teilen.
+Auftrag nach dem Gerätetest vom 22.09.: Reflexe wurden zu Schmutz,
+eindeutige Tropfen wurden nicht erkannt. Freigabe des Auftraggebers mit
+vier Vorgaben (Überbelichtetes nicht als sauber, hell ≠ unbrauchbar,
+gesamte Schmutzbewertung prüfen, eigene Tropfenreparatur).
 
-- **Die Belichtung allein kippt „Sauber".** Gleiche Fläche, gleiche
-  Lichtfarbe: 54 % Helligkeit → PASS, 70 % → FAIL mit 74,5 % warmen
-  Pixeln. `(rn − bn) > 0,08` ist eine absolute Schwelle; der Restfarbstich
-  nach der **halben** Grauwelt-Korrektur wächst aber proportional zur
-  Helligkeit: `rn − bn = 0,5 · P · (Ar − Ab)`.
-- **Ein heller warmer Reflex auf 5 % der Fläche genügt für FAIL**
-  (`LOCAL_RESIDUE`), 18 % ergeben `ORGANIC_RESIDUE`. Helle Pixel werden
-  berechnet (`maskBright`), aber nie aus der Warmzählung ausgenommen.
-- **Der vorhandene Lichthinweis kann das nicht auffangen:** er hängt an
-  `warmBlockFrac > 0,8`. Der Gerätedatensatz vom 22.09. hat 169 von 920
-  Warmzonen = 18,4 %. Ein örtlicher Reflex löst ihn nie aus.
-- **Voller Weißabgleich räumt den Fehlalarm ab und öffnet einen Fehler in
-  der Gegenrichtung.** Echter Rückstand bleibt bis 75 % Bedeckung rot, bei
-  100 % Bedeckung kippt er auf PASS — genau der Fall „kleines Teil füllt
-  das Bild".
-- **Tropfen:** 60 Tropfen auf 6 % der Fläche ergeben PASS, solange ihr
-  Glanz unter +0,30 Helligkeit bleibt; darüber springen die hellen Pixel
-  von 0,0 % auf 5,7 % und das Tor greift. Der Texturweg
-  (`gradMean > 0,055` **und** `edgeFrac > 8 %`) erreicht dabei 0,034 und
-  1,6 % und trägt nie. Streiflicht erhöht die Chance auf Glanz, schließt
-  die Lücke aber nicht: vollständige Sequenz ohne Glanz ergibt wieder
-  PASS.
-- **Die Befundstärke sagt weniger, als sie aussieht:** `wf · 700`,
-  gedeckelt auf 100. Ab 14,3 % warmen Pixeln steht immer 100 — 19 % über
-  der FAIL-Schwelle von 12 %.
+- **Farbton statt Farbmenge** über der Bezugshelligkeit 0,40, darunter
+  die alte Grenze 0,08. Grauwelt-Stärke bleibt 0,5 (ein voller
+  Weißabgleich rechnet voll bedeckten Belag auf PASS).
+- **Glanzbereich** — der eigentliche Schmutzweg des Reflexes war nicht die
+  Warmregel, sondern „Heller Belag" über die Blockabweichung. Gesättigte
+  Zonen und helle Zonen mit erhaltener Schliffstruktur (Licht addiert,
+  Belag verdeckt) gehen in keine Schmutzregel ein. Was dort verborgen sein
+  könnte, macht Sauber NICHT BEWERTBAR. Überbelichtet → kein „trocken".
+- **Tropfen ohne Glanz** (`src/tropfen.js`): Hell-Dunkel-Fleck oder dunkler
+  Ring gegen die ortsübliche Streuung, Bildpyramide 1–4, Riefen verworfen.
+  Ab 3 Stellen FAIL, 1–2 Stellen NICHT BEWERTBAR, auch mit Sequenz.
+- **Anzeige:** Tropfen als türkisfarbene Ringe, Glanzbereich eingeblendet,
+  wenn er Sauber unbewertbar macht.
 
-Messskript `werkbank/lichtfarbe.mjs` ist geschrieben und ausgeführt, aber
-**nirgends committet** — es gehört in `Desktopvisuclean-standalone`.
+**Geprüft am Stand `339850c`:** `verify` Exit 0, 31 Suiten, 751 Prüfungen
+plus 8 Kalibrierungsfälle, Manifest 138 Dateien reproduzierbar,
+`test:bedienlauf` 31/31, `test:kameralauf` 13/13, 20 Sabotagen alle
+erkannt. App im echten Chromium mit den echten Fixture-Bildern: nass →
+„Tropfenmuster erkannt", 42 Stellen; trocken → S PASS wie `a8dcf67`.
+Eine Regression (Farbton-Untergrenze 0,25) fand **nur** dieser App-Lauf;
+jetzt bewacht durch `reflextest` RL22.
+
+**Nicht geprüft:** iPhone-Kamera und -Laufzeit (Kern im Node-Lauf
+12 → 90 ms je Bild), reale Erkennungsrate an Waschgutteilen.
+**Offene Kalibrierung** (`kalibrierung.mjs`): KO4 Unschärfe kostet den
+Tropfenweg Stellen (19 → 5), KO5 Riefen von 3–5 px sind unter Streiflicht
+nicht von kleinsten Tropfen zu trennen, KO6 schwacher warmer Film auf
+heller Fläche wird jetzt belichtungsunabhängig mit der Grenze der mittleren
+Helligkeit bewertet (bisher je nach Belichtung erkannt oder nicht).
 
 ## Offen
 
@@ -102,11 +106,13 @@ Messskript `werkbank/lichtfarbe.mjs` ist geschrieben und ausgeführt, aber
   prüfen, ob Trocken und Sauber „nicht bewertbar" zeigen; helles und
   dunkles Foto zusammen, Warnung richtig zugeordnet; PDF gegen
   Ergebnisansicht.
-- **Reparatur der Warmpixel-Prüfung** — beauftragt ist sie nicht. Vorschlag
-  in dieser Reihenfolge: helle und gesättigte Pixel aus der Warmzählung
-  ausnehmen, die Chroma-Schwelle auf die Helligkeit beziehen, und einen
-  flächigen Farbstich zu NICHT BEWERTBAR führen statt zu FAIL oder PASS.
-  Die Grauwelt-Stärke **nicht** anheben (siehe Messung oben).
+- **Gerätetest von `339850c`** — erst nach Auslieferung möglich, und die
+  ist ein eigener Auftrag. Zu prüfen: Tageslicht- und Lampenreflex auf
+  sauberem Teil (kein Schmutz), echte Tropfen ohne Glanz (Ringe sichtbar),
+  Streiflicht auf verkratztem Teil (keine Tropfen), Laufzeit je Foto.
+- **Flächiger Farbstich** bleibt ein FAIL mit Hinweis (RL14): ohne
+  neutrale Referenz nicht von flächigem Belag zu trennen. Mein früherer
+  Vorschlag, ihn NICHT BEWERTBAR zu machen, ist bewusst **nicht** umgesetzt.
 - **Unabhängiger Anker fehlt.** Aus einem einzelnen Bild ohne neutrale
   Referenz sind warme Lichtfarbe und warmer Rückstand nicht trennbar.
   Kandidaten: Graukarte im Bild, oder Referenzaufnahme des sauberen Teils
@@ -131,9 +137,8 @@ Messskript `werkbank/lichtfarbe.mjs` ist geschrieben und ausgeführt, aber
 
 ## Nächster konkreter Schritt
 
-Die Lichtabhängigkeit ist gemessen (Abschnitt oben). Offen ist die
-Entscheidung des Auftraggebers, ob die Warmpixel-Prüfung repariert wird —
-ohne Freigabe wird am Erkennungskern nichts geändert.
+Entscheidung des Auftraggebers, ob `339850c` an die bestehende URL
+ausgeliefert wird. Danach Gerätetest (Liste unter „Offen").
 
 ## Ausführliche Berichte
 
