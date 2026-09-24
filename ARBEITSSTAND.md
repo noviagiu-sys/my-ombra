@@ -12,7 +12,7 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 |---|---|
 | Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
-| Code, neu | Branch `claude/erkennung-licht-tropfen`, Commit `339850c` — **nicht zusammengeführt, nicht ausgeliefert** |
+| Code, neu | Branch `claude/erkennung-licht-tropfen`, Commit `339850c` — **nicht zusammengeführt, nicht ausliefern** (Tropfenteil widerlegt, siehe unten) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
 Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
@@ -62,6 +62,35 @@ Zahlen oben gelten nicht für sie.
 
 **Grundsätzlich nicht geprüft:** reale iPhone-Kamera, Aufnahmequalität,
 Zoom- und Lichtunterstützung am Gerät, reale Erkennungsleistung.
+
+## ⚠ Korrektur 24.09. abends: der Tropfenteil ist NICHT belegt
+
+Der Auftraggeber hat das App-Overlay geprüft: **Die als Tropfen markierten
+Stellen in `wet-stainless-close.png` sind Kaffeereste, die für
+Schmutzpartikel stehen — keine Tropfen.** Die Fläche ist nass (Film), die
+Punkte sind Partikel.
+
+Folgen, ausdrücklich:
+- Es gibt **keinen echten Nachweis**, dass `src/tropfen.js` Wassertropfen
+  erkennt. Die „echten Positivfälle" TR1–TR3, TR13, KB8 sowie die neuen
+  Erwartungen in A7 und I2 beruhen auf Partikeln. Belegt ist nur: der
+  Detektor findet kompakte Hell-Dunkel-Flecken — Partikel mit Relief
+  eingeschlossen.
+- Der Detektor meldet damit **Schmutzpartikel als Tropfenmuster unter
+  Trocken** — falsches Kriterium, falsche Handlung (nachtrocknen statt
+  nachreinigen).
+- TR8 (Partikel sind keine Tropfen) war zu schwach: gefüllte, einfarbige
+  Scheiben ohne Relief. Echte Partikel sehen anders aus.
+- Die Aussagen „echte Tropfen … erkannt" im CHANGELOG und in der
+  Commitnachricht von `339850c` sind falsch.
+
+**Weiter gültig:** die Reflex- und Sauberkeitsreparatur — die echten Bilder
+dienten dort nur als Negativfälle, die Mechanismen sind synthetisch und am
+App-Ausschnitt der trockenen Kontrolle gemessen.
+
+**Voraussetzung für jeden weiteren Schritt am Tropfenteil:** echte Aufnahmen
+mit bekannter Wahrheit — dasselbe saubere Teil trocken, mit Wassertropfen,
+mit Partikeln, möglichst unter Normal- und Streiflicht.
 
 ## Licht, Reflexe, Tropfen (`339850c`, freigegeben 24.09.)
 
@@ -137,8 +166,9 @@ Helligkeit bewertet (bisher je nach Belichtung erkannt oder nicht).
 
 ## Nächster konkreter Schritt
 
-Entscheidung des Auftraggebers, ob `339850c` an die bestehende URL
-ausgeliefert wird. Danach Gerätetest (Liste unter „Offen").
+`339850c` wird so nicht ausgeliefert. Entscheidung des Auftraggebers:
+Reflexreparatur allein ausliefern oder warten; für den Tropfenteil zuerst
+echte Referenzaufnahmen (siehe Korrektur oben).
 
 ## Ausführliche Berichte
 
