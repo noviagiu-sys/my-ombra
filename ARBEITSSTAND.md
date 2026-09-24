@@ -129,6 +129,37 @@ nicht von kleinsten Tropfen zu trennen, KO6 schwacher warmer Film auf
 heller Fläche wird jetzt belichtungsunabhängig mit der Grenze der mittleren
 Helligkeit bewertet (bisher je nach Belichtung erkannt oder nicht).
 
+## Echtes Wasserfoto (Auftraggeber, 24.09.) — Ergebnis
+
+Edelstahlpfanne mit Wasser, braunem Rand, Glanzstelle. Das Foto liegt nur im
+Arbeitsordner der Sitzung, in keinem Repository.
+
+- Wasser liegt dort als **flache Lachen mit scharfer Randlinie**, nicht als
+  runde Tropfen; die Schliffriefen laufen unter dem Wasser sichtbar weiter.
+- App-Ausschnitt, `a8dcf67` und `339850c` gleich: Trocken FAIL, Sauber FAIL
+  (lokaler Rückstand = brauner Rand, richtig). Das Trocken-FAIL kommt aber
+  fast ganz von der **Lichtbahn** des Schliffs, nicht vom Wasser.
+- Ganzes Bild mit Sequenz: `a8dcf67` meldet **trocken, bestanden**;
+  `339850c` nicht bewertbar (2 Einzelstellen, keine davon eine Lache).
+- Folgerung: Wasser muss über die Randlinie (Meniskus) und die Verzerrung der
+  Schliffstruktur erkannt werden. Braucht echte Bildpaare derselben Stelle:
+  trocken / mit Wasser / mit Wasser und Sediment.
+
+## Prüfung „Tiefenrekonstruktion photometrisches Stereo" (Fremdskript, 24.09.)
+
+Nicht im Repository. An synthetischen Rillen bekannter Tiefe geprüft
+(Mechanik, keine Erkennungsleistung):
+- Vorzeichenfehler „Licht von oben" (+y zeigt im Bild nach unten): waagerechte
+  Rillen werden zu Graten.
+- Diagonale Kratzer fallen immer heraus (achsenparallele Box statt Streckung).
+- Gleiche Tiefe ergibt je nach Breite 0,40–0,60, Handy-Gamma −60 %,
+  Umgebungslicht −57 %, 8° Lampenfehler −50 %: ein Kalibrierfaktor trägt nicht.
+- Reines Schliffbild: 17 Scheinkratzer.
+- „r.E." ist die Pixelbreite; bei ~25 µm/px liegt 1 µm unter der eigenen
+  Rauschgrenze (Abschätzung). Edelstahl ist nicht lambertsch — nicht geprüft.
+- Einordnung: Werkbankkandidat für die Messkampagne, **nie** Tiefenurteil in
+  der App (Leitplanke 10).
+
 ## Offen
 
 - **Gerätetest der Lichtreparatur:** dunkle Aufnahme wiederholen und
