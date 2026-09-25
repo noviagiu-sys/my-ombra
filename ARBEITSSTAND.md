@@ -13,6 +13,7 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 | Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
 | Code, neu | Branch `claude/reflex-getrennt`, Commits `6ee0e7a` + `893fedd` auf `a8dcf67` — Reflexreparatur **ohne** Tropfen, mit Belag-Korrektur. Nicht zusammengeführt, nicht ausgeliefert |
+| Werkbank Kratzer | Branch `claude/kratzer-werkbank`, `bd58621` auf `893fedd` — nur `werkbank/`, src unverändert |
 | Code, verworfen | Branch `claude/erkennung-licht-tropfen`, `339850c` — **nicht ausliefern** (Tropfenteil widerlegt) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
@@ -247,13 +248,41 @@ Nicht im Repository. An synthetischen Rillen bekannter Tiefe geprüft
   Eine automatische Zuordnung zu jedem Testlauf wäre eine Zusatzfunktion.
 - **Tessera bleibt getrennt.**
 
+## Kratzer und Riefen — Bestandsaufnahme (25.09., `bd58621`)
+
+- **Stiller PASS (gemessen, `werkbank/kratzmessung.mjs`):** Der Prüfpunkt
+  „Kratzer und Riefen" hängt allein an `f.scratches` des Kerns, und der
+  sucht nur hinter dem Tor `edgeFrac < 0,06 && tvFlat < 0,035`. Auf der
+  echten Kontrolle ist es zu (tvFlat 0,045) → PASS „Keine länglichen
+  Strukturen erkannt" für **jeden** eingesetzten Kratzer, auch quer, 60 %
+  der Bildkante, Kontrast 0,25. Auf glattem synthetischem Schliff (Tor
+  offen) meldet der Kern erst ab Kontrast 0,25.
+- Das Screening (`scratchScreening.js`) findet auf dem echten Bild die
+  meisten eingesetzten Kratzer nicht (Kantenschwelle am Bildmaximum
+  normiert; die Beckenkante dominiert) und trägt ohnehin kein Urteil.
+- Das Kontrollbild ist ein **benutztes Becken voller feiner
+  Gebrauchskratzer**. KB7/A15/A16 („Kontrolle Gesamt PASS") beruhen beim
+  Kratzer auf der nicht durchgeführten Suche.
+- Prototyp `werkbank/rillendetektor.mjs` (Rille statt Kante, örtliche
+  Streuung je Richtung): findet eingesetzte Kratzer auf der echten
+  Kontrolle ab Kontrast 0,10, meldet dort aber 6 Geometrielinien
+  (Überlaufschlitz, Rundungen) und kaum die Gebrauchskratzer. Geometrie
+  und Kratzer trennen weder Streckung noch Seitenstufe an diesen Bildern.
+  181 ms je 480×640 (Node).
+
 ## Nächster konkreter Schritt
 
-**Kratzer- und Riefenerkennung** (Priorität 1b): Bestandsaufnahme des
-Kratzerwegs im Kern (`scratches`, `scratchScreening.js`, Anzeige),
-rote Gegenproben für relevante Kratzer/Riefen auf gebürstetem Schliff,
-dann Reparatur und präzise Markierung. Auf `claude/reflex-getrennt`
-aufbauend. `893fedd` ist ein Auslieferungskandidat — Auslieferung nur auf
+**Entscheidungen des Auftraggebers zu Kratzern** (vorgelegt 25.09.):
+1. Stillen PASS sofort schließen (Kratzer „nicht bewertbar", wo nicht
+   gesucht wurde)? Folge: Kontrollbild nicht mehr Gesamt PASS, KB7/A15/A16
+   ändern.
+2. Was ist „relevant"? Gebrauchsspuren wie im Kontrollbecken → FAIL oder
+   nur Hinweis?
+3. Echte Aufnahmen der Zielteile mit bekannten Kratzern/Riefen, dasselbe
+   Teil ohne, Prüffläche auf der ebenen Fläche. Private Fotos nicht ins
+   Repository ohne Freigabe.
+
+`893fedd` ist ein Auslieferungskandidat — Auslieferung nur auf
 gesonderten Auftrag. Tropfen/Feuchte ruhen (Priorität 2).
 
 ## Ausführliche Berichte
