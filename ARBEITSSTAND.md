@@ -1,6 +1,6 @@
 # Arbeitsstand
 
-**Stand:** 24.09.2026, abends. Gearbeitet wurde ausschließlich an **VisuClean**.
+**Stand:** 25.09.2026. Gearbeitet wurde ausschließlich an **VisuClean**.
 Über Ombra und Trägerlotse sagt dieser Arbeitsstand nichts.
 
 **Achtung, zwei Repositories.** Der maßgebliche VisuClean-Code liegt
@@ -12,11 +12,24 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 |---|---|
 | Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
-| Code, neu | Branch `claude/erkennung-licht-tropfen`, Commit `339850c` — **nicht zusammengeführt, nicht ausliefern** (Tropfenteil widerlegt, siehe unten) |
+| Code, neu | Branch `claude/reflex-getrennt`, Commits `6ee0e7a` + `893fedd` auf `a8dcf67` — Reflexreparatur **ohne** Tropfen, mit Belag-Korrektur. Nicht zusammengeführt, nicht ausgeliefert |
+| Code, verworfen | Branch `claude/erkennung-licht-tropfen`, `339850c` — **nicht ausliefern** (Tropfenteil widerlegt) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
 Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
 `208cf1b` (Claude) → `59eb545`, `d63d289`, `a8dcf67` (Codex).
+
+## Prioritäten des Auftraggebers (25.09.)
+
+1. **Schmutz und tiefe Kratzer/Riefen:** Schmutz zuverlässig erkennen und
+   räumlich anzeigen; Reflexe von möglichen Rückständen unterscheiden,
+   ohne Beläge auszublenden; relevante Kratzer und Riefen finden und
+   präzise markieren.
+2. **Feuchtigkeit und Wassertropfen** — danach, darf Priorität 1 nicht
+   aufhalten.
+
+Reihenfolge der nächsten Lieferung: erst der Fehler der Schmutz-/
+Reflexkorrektur (erledigt, `893fedd`), dann die Kratzererkennung.
 
 ## Erledigt
 
@@ -31,6 +44,45 @@ Kette: `ebf3a8b` (Claude) → `f5956f3`, `40f70e7` (Codex) → `a8d0afa`,
    `AGENTS.md` für Codex.
 5. **Kritisches Licht** (`a8d0afa`) und zwei Restfehler daraus (`208cf1b`).
 6. **Licht, Reflexe, Tropfen** (`339850c`) — Abschnitt unten.
+7. **Reflexreparatur getrennt und korrigiert** (`6ee0e7a`, `893fedd`) —
+   Abschnitt direkt hierunter.
+
+## Reflexreparatur ohne Tropfen, Belag-Korrektur (`893fedd`, 25.09.)
+
+Anlass: Codex-Gegenprüfung zu `339850c`. Ein neutraler heller Belag, der
+die Schliffstruktur teilweise durchscheinen lässt (`0,7 × Untergrund +
+0,3 × Weiß`), galt als Licht → „Sauber". Reproduziert, auch ohne
+Tropfenfinder.
+
+- `6ee0e7a`: `339850c` ohne `src/tropfen.js`, ohne DROPLET-Regeln und ohne
+  die darauf beruhenden Teständerungen (A7, A17a, I2, I4, KB3, KB5, KB8
+  wieder wie camera.3). Zwischenstand, Gegenfall dort rot.
+- Breit gemessen (`werkbank/belagmessung.mjs`, Vergleich camera.3): am
+  Stand `6ee0e7a` wurden 161 von 225 Rasterfällen, 33/96 neben Glanz und
+  49/88 in einem unabhängigen Satz „Sauber", die camera.3 im Belag meldete.
+- `893fedd`: LICHT nur, wenn die Struktur um `LICHT_MARGE 0,25` über dem
+  liegt, was ein Belag derselben Aufhellung übrig ließe; sonst UNKLAR
+  (keine Schmutzregel, zählt verdeckt, wenn es als Oberfläche einen
+  hellen Belag ergäbe → Sauber NICHT BEWERTBAR). Unterer Median; Blöcke
+  mit eigener Struktur < 0,7 nicht vom Gruppenmedian zu Licht erklärt;
+  verdeckt + gesehen zählen gemeinsam (`glanzVerbirgtBefund`).
+- Danach: 0/225, 0/96, 0/88. Reines Licht nie FAIL, aber öfter NICHT
+  BEWERTBAR (42 → 80 von 192 synthetischen Fällen). Urteile der drei
+  echten Referenzbilder unverändert.
+
+**Geprüft am Stand `893fedd`** (Kern-SHA `839a374a…85bc`): `npm run
+verify` Exit 0, 30 Suiten, 738 Prüfungen plus 7 Kalibrierungsfälle,
+Manifest 138 Dateien reproduzierbar, `test:bedienlauf` 31/31,
+`test:kameralauf` 13/13 (Chromium, synthetische Kamera). RL23–RL27 neu,
+alle am Stand `6ee0e7a` rot; RL22 verlangt jetzt PASS. 19 Sabotagen
+(`werkbank/sabotage_sauberkeit.py`), jede erkannt.
+
+**Nicht geprüft:** echte Beläge (alle synthetisch; ein körniger echter
+Film könnte strukturell noch schwerer von Licht zu trennen sein), iPhone.
+**Knackpunkt:** Im App-Ausschnitt der echten trockenen Kontrolle gelten
+3 Glanzzonen als UNKLAR; PASS bleibt sie nur über die Verteilungsgrenze
+0,18. Auf echten Fotos ist mit mehr „nicht bewertbar – Glanzstelle" zu
+rechnen.
 
 ## Kritisches Licht (`a8d0afa`, `208cf1b`)
 
@@ -197,9 +249,12 @@ Nicht im Repository. An synthetischen Rillen bekannter Tiefe geprüft
 
 ## Nächster konkreter Schritt
 
-`339850c` wird so nicht ausgeliefert. Entscheidung des Auftraggebers:
-Reflexreparatur allein ausliefern oder warten; für den Tropfenteil zuerst
-echte Referenzaufnahmen (siehe Korrektur oben).
+**Kratzer- und Riefenerkennung** (Priorität 1b): Bestandsaufnahme des
+Kratzerwegs im Kern (`scratches`, `scratchScreening.js`, Anzeige),
+rote Gegenproben für relevante Kratzer/Riefen auf gebürstetem Schliff,
+dann Reparatur und präzise Markierung. Auf `claude/reflex-getrennt`
+aufbauend. `893fedd` ist ein Auslieferungskandidat — Auslieferung nur auf
+gesonderten Auftrag. Tropfen/Feuchte ruhen (Priorität 2).
 
 ## Ausführliche Berichte
 
