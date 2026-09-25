@@ -13,7 +13,8 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 | Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
 | Code, neu | Branch `claude/reflex-getrennt`, Commits `6ee0e7a` + `893fedd` auf `a8dcf67` — Reflexreparatur **ohne** Tropfen, mit Belag-Korrektur. Nicht zusammengeführt, nicht ausgeliefert |
-| Werkbank Kratzer | Branch `claude/kratzer-werkbank`, `bd58621` auf `893fedd` — nur `werkbank/`, src unverändert |
+| **Release-Kandidat** | Branch `claude/release-rc4.46`, `b17e155`, Version `8.3.0-rc.4.46` — **vorbereitet, nicht ausgeliefert**. Auslieferung = Fast-Forward `claude/session-1ocbg3` → `b17e155`, nur auf Freigabe |
+| Kette | `a8dcf67` → `6ee0e7a` (Reflex ohne Tropfen) → `893fedd` (Belag-Korrektur) → `bd58621` (Werkbank Kratzer) → `3b4e229` (Kratzer: kein PASS ohne Suche) → `b17e155` (Release) |
 | Code, verworfen | Branch `claude/erkennung-licht-tropfen`, `339850c` — **nicht ausliefern** (Tropfenteil widerlegt) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
@@ -270,20 +271,45 @@ Nicht im Repository. An synthetischen Rillen bekannter Tiefe geprüft
   und Kratzer trennen weder Streckung noch Seitenstufe an diesen Bildern.
   181 ms je 480×640 (Node).
 
+## Entscheidungen des Auftraggebers zu Kratzern (25.09.)
+
+1. Stillen PASS sofort schließen: **ja** → umgesetzt in `3b4e229`.
+2. **Keine 12-%-Längengrenze** als Relevanzregel. Länge und Kontrast
+   dürfen Kandidaten sortieren, aber kurze Stellen nicht als harmlos
+   aussortieren (Aufnahmeabstand verändert den Bildanteil).
+3. Echte Teilefotos für die Verbesserung nötig, nicht für die Korrektur:
+   dieselbe Stelle als Übersicht und Nahaufnahme, Riefe vom Auftraggeber
+   markiert, möglichst zwei Lichtwinkel, dazu eine unauffällige
+   Vergleichsfläche. Wassertests derzeit nicht.
+
+## Kratzer: kein PASS ohne Suche (`3b4e229`)
+
+Prüfpunkt NICHT BEWERTBAR (`NOT_ASSESSABLE_SCRATCH_NOT_SEARCHED`), wenn
+die Kernsuche hinter ihrem Tor nicht lief; gefundener Kratzer bleibt FAIL,
+gelaufene Suche ohne Fund PASS; Rohcode unverändert. Fotobetrachter färbt
+nach Prüfpunkten. Geänderte Erwartungen A10, A15, A16, KB7, I8, I10, S45
+(Anforderung jeweils gleich; dort war der Kratzerpunkt PASS ohne Suche).
+`kratzertest` KS1–KS9, 25 Sabotagen gesamt erkannt.
+
+**Bekannt, unverändert seit camera.3:** Im App-Ausschnitt der Kontrolle
+ist das Tor offen (tvFlat 0,014); der Kern meldet dort eine Struktur am
+Abflussring (Geometrie) → Intakt FAIL. Eingesetzte Linien werden dort
+gefunden, verschmelzen aber mit dem Ring zu einem großen Kasten.
+
+**Geprüft am Release `b17e155`:** `npm ci` ohne Schwachstelle, `verify`
+Exit 0 (31 Suiten, 747 + 7), Manifest 141 Dateien reproduzierbar,
+`test:bedienlauf` 31/31, `test:kameralauf` 13/13. Nicht geprüft: iPhone,
+Auslieferung an der URL.
+
 ## Nächster konkreter Schritt
 
-**Entscheidungen des Auftraggebers zu Kratzern** (vorgelegt 25.09.):
-1. Stillen PASS sofort schließen (Kratzer „nicht bewertbar", wo nicht
-   gesucht wurde)? Folge: Kontrollbild nicht mehr Gesamt PASS, KB7/A15/A16
-   ändern.
-2. Was ist „relevant"? Gebrauchsspuren wie im Kontrollbecken → FAIL oder
-   nur Hinweis?
-3. Echte Aufnahmen der Zielteile mit bekannten Kratzern/Riefen, dasselbe
-   Teil ohne, Prüffläche auf der ebenen Fläche. Private Fotos nicht ins
-   Repository ohne Freigabe.
-
-`893fedd` ist ein Auslieferungskandidat — Auslieferung nur auf
-gesonderten Auftrag. Tropfen/Feuchte ruhen (Priorität 2).
+1. **Freigabe der Auslieferung** von `b17e155` an die bestehende URL
+   (Fast-Forward `claude/session-1ocbg3`). Danach Gerätetest: Glanz auf
+   sauberem Teil, Belag, geschliffene Fläche (Kratzer „nicht bewertbar").
+2. **Kratzerdetektor an echten Teilen** (`werkbank/rillendetektor.mjs`),
+   ohne Längengrenze als Freigaberegel; präzise Markierung statt großer
+   Kästen; Geometrie (Ringe, Rundungen) abgrenzen. Wartet auf die Fotos.
+3. Tropfen/Feuchte ruhen (Priorität 2).
 
 ## Ausführliche Berichte
 
