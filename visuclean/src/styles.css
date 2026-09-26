@@ -1,0 +1,478 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  --bg: #070c14;
+  --card: #0f1724;
+  --elevated: #162033;
+  --border: #3b4b61;
+  --blue: #38bdf8;
+  --green: #4ade80;
+  --red: #fb7185;
+  --orange: #fb923c;
+  --text: #f1f5f9;
+  --muted: #b6c3d4;
+  --violet: #c084fc;
+}
+
+* { box-sizing: border-box; }
+html { min-height: 100%; background: var(--bg); }
+body, #root { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); color: var(--text); }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, input, select, textarea { font: inherit; }
+button, select, input[type="checkbox"] { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+button, a, input, select, textarea, canvas[tabindex] { outline: none; }
+:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 3px; }
+img, canvas, video { max-width: 100%; }
+h1, h2, h3, p { margin-top: 0; }
+h1 { font-size: clamp(1.45rem, 5vw, 2rem); line-height: 1.16; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1rem; }
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+.muted { color: var(--muted); }
+.ok { color: var(--green); }
+.fail { color: var(--red); }
+
+.app-shell { min-height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.screen { width: min(100%, 760px); min-height: 100vh; margin: 0 auto; padding: 18px clamp(14px, 4vw, 28px) 112px; }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 16px; }
+
+.button, .icon-button, .segmented button, .comment-chips button, .issue-actions button { min-height: 46px; border: 1px solid var(--border); border-radius: 12px; background: var(--elevated); color: var(--text); font-weight: 750; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 10px 16px; }
+.button { width: 100%; margin-top: 10px; }
+.button:hover:not(:disabled), .icon-button:hover:not(:disabled) { filter: brightness(1.13); }
+.button-primary { background: #0879ad; border-color: var(--blue); color: #fff; }
+.button-danger { background: #9f1239; border-color: var(--red); color: #fff; }
+.button-warning { background: #9a4b08; border-color: var(--orange); color: #fff; }
+.button-ghost { background: transparent; }
+.button-large { min-height: 58px; font-size: 1.05rem; }
+.button-full { width: 100%; }
+.icon-button { width: 46px; min-width: 46px; padding: 0; margin: 0; }
+
+.login-page { min-height: 100vh; display: grid; place-items: center; padding: max(22px, env(safe-area-inset-top)) 16px max(22px, env(safe-area-inset-bottom)); background: radial-gradient(circle at 50% 5%, #11324a 0, var(--bg) 42%); }
+.login-shell { width: min(100%, 430px); text-align: center; }
+.brand-mark, .hero-icon { width: 72px; height: 72px; margin: 0 auto 16px; border: 2px solid var(--blue); border-radius: 22px; display: grid; place-items: center; color: var(--blue); background: #0b2233; box-shadow: 0 0 35px #38bdf82b; }
+.login-shell h1 { margin-bottom: 4px; font-size: 2.15rem; }
+.login-subtitle { color: var(--muted); }
+.language-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.language-switch .button { margin: 0; }
+.login-form { text-align: left; }
+.demo-access { margin-top: 14px; padding: 8px; }
+.demo-access h2 { font-size: .86rem; text-align: left; color: var(--muted); margin: 6px 8px; }
+.demo-access > button { width: 100%; min-height: 48px; border: 0; border-top: 1px solid #29384c; background: transparent; color: var(--text); display: flex; justify-content: space-between; align-items: center; padding: 10px; }
+.demo-access > button:first-of-type { border-top: 0; }
+.role-chip { border: 1px solid var(--border); background: var(--elevated); padding: 3px 8px; border-radius: 999px; font-size: .72rem; color: var(--muted); }
+.demo-disclaimer { color: var(--muted); font-size: .76rem; line-height: 1.45; text-align: center; margin: 16px 0 0; }
+
+.field { display: grid; gap: 7px; margin: 12px 0; text-align: left; }
+.field > label, .filter-grid label { font-size: .88rem; font-weight: 750; color: #dbe5f2; }
+input, select, textarea { width: 100%; min-height: 48px; border: 1px solid #52637b; border-radius: 10px; background: #09111e; color: var(--text); padding: 10px 12px; font-size: 16px; }
+textarea { resize: vertical; line-height: 1.45; }
+input::placeholder, textarea::placeholder { color: #8797ac; }
+.field-hint { color: var(--muted); font-size: .76rem; text-align: right; }
+.password-field { position: relative; }
+.password-field input { padding-right: 56px; }
+.password-field .icon-button { position: absolute; right: 2px; top: 1px; border: 0; background: transparent; }
+fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin: 12px 0; }
+legend { padding: 0 5px; font-weight: 750; color: #dbe5f2; }
+
+.screen-header { min-height: 64px; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; padding-top: 2px; }
+.screen-heading { min-width: 0; flex: 1; }
+.screen-heading h1 { margin: 4px 0 3px; overflow-wrap: anywhere; }
+.screen-heading p { color: var(--muted); margin: 0; line-height: 1.35; }
+.app-header { min-height: 64px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.app-header > div:last-child { display: flex; gap: 8px; }
+.app-brand { display: flex; align-items: center; gap: 10px; }
+.app-brand > span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: #0b3147; color: var(--blue); }
+.app-brand div { display: grid; }
+.app-brand strong { font-size: 1.1rem; }
+.app-brand small { color: var(--muted); }
+.header-history { min-width: 58px; min-height: 46px; border: 1px solid var(--border); border-radius: 12px; background: var(--elevated); color: var(--text); display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; }
+
+.hero { text-align: center; padding: 22px 10px 16px; }
+.hero h1 { margin-bottom: 6px; font-size: clamp(1.8rem, 8vw, 2.7rem); }
+.hero p { color: var(--muted); }
+.hero-criteria { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
+.hero-criteria span { border: 1px solid #2c6e87; border-radius: 999px; background: #0c2736; color: #c7eeff; padding: 6px 10px; font-size: .8rem; font-weight: 700; }
+.home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.home-grid button { min-height: 112px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); color: var(--text); display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; padding: 15px; text-align: left; }
+.home-grid button svg { color: var(--blue); }
+.home-grid button small { color: var(--muted); }
+.system-strip { margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; color: var(--muted); font-size: .78rem; }
+.system-strip span { display: inline-flex; gap: 5px; align-items: center; }
+
+.alert { border: 1px solid var(--border); border-radius: 11px; padding: 11px 12px; display: flex; align-items: flex-start; gap: 9px; line-height: 1.4; margin: 10px 0; }
+.alert svg { flex: 0 0 auto; margin-top: 1px; }
+.alert-error { color: #ffdce2; background: #4b1022; border-color: var(--red); }
+.alert-warning { color: #fff1dd; background: #4a280c; border-color: var(--orange); }
+.status-note { display: inline-flex; align-items: center; gap: 7px; color: #bcecff; }
+
+.toolbar-stack { display: grid; gap: 9px; margin-bottom: 14px; }
+.toolbar-stack .button { margin: 0; }
+.search-field { position: relative; }
+.search-field svg { position: absolute; left: 13px; top: 15px; color: var(--muted); }
+.search-field input { padding-left: 40px; }
+.manual-code { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.manual-code .button { width: auto; margin: 0; }
+.equipment-list { display: grid; gap: 9px; }
+.equipment-card { width: 100%; min-height: 76px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); color: var(--text); display: grid; grid-template-columns: 48px minmax(0, 1fr) 22px; align-items: center; gap: 12px; padding: 12px; text-align: left; }
+.equipment-card:hover { border-color: var(--blue); background: #122033; }
+.equipment-card > span:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
+.equipment-card strong { overflow-wrap: anywhere; }
+.equipment-card small { color: var(--muted); line-height: 1.3; }
+.equipment-icon, .zone-number { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: #0d3043; color: var(--blue); font-weight: 900; }
+
+.scanner-view, .camera-panel { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 14px; background: #020408; }
+.scanner-view { aspect-ratio: 4 / 3; }
+/* Der SCANNER darf zuschneiden: dort wird ein Code eingerahmt, und es
+   wird kein Bild gespeichert. Die Vorschau muss hier nicht zeigen, was
+   spaeter im Datensatz landet — es landet nichts. */
+.scanner-view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scanner-frame { position: absolute; inset: 18%; border: 3px solid var(--blue); border-radius: 14px; box-shadow: 0 0 0 999px #0008; }
+.camera-panel { margin-bottom: 12px; }
+/* BEFUND der Gegenpruefung an rc.4.39, zutreffend: hier stand
+   `object-fit: cover` zusammen mit einem erzwungenen `aspect-ratio: 4/3`.
+   Beim Ausloesen speichert `shoot()` dagegen das VOLLSTAENDIGE Kamerabild
+   (canvas.width = video.videoWidth). Weicht das Kameraformat von 4:3 ab —
+   im Hochformat auf dem Telefon immer —, zeigte die Vorschau einen
+   Ausschnitt, und nach der Aufnahme erschienen Bereiche, die beim
+   Fotografieren nicht zu sehen waren.
+
+   Was gespeichert wird, muss vorher sichtbar sein. Deshalb `contain`:
+   das Bild wird vollstaendig eingepasst, der Rest des Rahmens bleibt
+   dunkel. Kein festes Seitenverhaeltnis mehr — das Video bringt sein
+   eigenes mit. `max-height` haelt die Vorschau auf einem Telefon
+   bedienbar, ohne den Auslöser aus dem Bild zu schieben. */
+.camera-panel video { width: 100%; height: auto; max-height: 62vh; object-fit: contain; display: block; }
+.camera-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px; }
+.camera-actions .button { margin: 0; }
+.camera-tools { padding: 12px; display: grid; gap: 10px; color: var(--text); }
+.camera-frame-status { margin: 0; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.camera-zoom { display: grid; gap: 4px; font-size: .9rem; }
+.camera-zoom input { width: 100%; min-height: 44px; padding: 0; accent-color: var(--accent); }
+.camera-guidance { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+
+.capture-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.capture-actions .button { margin: 0; }
+
+.photo-editor { border: 1px solid var(--border); border-radius: 15px; background: var(--card); overflow: hidden; }
+.zoom-viewport { width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: #020408; touch-action: none; position: relative; }
+.zoom-layer { width: 100%; height: 100%; transform-origin: center; position: relative; transition: transform .08s linear; }
+.zoom-layer img { display: block; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.image-interaction-layer { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; border: 0; background: transparent; padding: 0; cursor: zoom-in; }
+.image-interaction-layer.marker-active { cursor: crosshair; }
+.image-marker { z-index: 3; position: absolute; width: 44px; height: 44px; min-width: 44px; min-height: 44px; transform: translate(-50%, -50%); border: 3px solid #fff; border-radius: 50%; background: #be123c; color: #fff; font-weight: 900; box-shadow: 0 0 0 2px #070c14; padding: 0; }
+.editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 10px; }
+.editor-toolbar .button { width: auto; flex: 1; margin: 0; }
+.zoom-readout { min-width: 62px; min-height: 46px; border: 1px solid var(--border); border-radius: 10px; background: #09111e; color: var(--text); font-weight: 800; }
+.editor-hint { margin: 0 11px 10px; color: var(--muted); font-size: .8rem; }
+.marker-coordinate-strip { padding: 0 10px 10px; display: flex; gap: 7px; overflow-x: auto; }
+.marker-coordinate-strip span { white-space: nowrap; border: 1px solid #64748b; border-radius: 999px; padding: 5px 8px; font-size: .72rem; }
+.thumbnail-strip { display: flex; overflow-x: auto; gap: 9px; padding: 13px 2px 11px; }
+.thumbnail-wrap { flex: 0 0 auto; position: relative; padding-top: 6px; }
+.thumbnail { width: 76px; height: 58px; border: 2px solid var(--border); border-radius: 9px; background: #020408; padding: 0; overflow: hidden; position: relative; }
+.thumbnail.active { border-color: var(--blue); box-shadow: 0 0 0 2px #075985; }
+.thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.thumbnail span { position: absolute; bottom: 2px; left: 3px; background: #000d; color: #fff; padding: 1px 5px; border-radius: 5px; font-size: .7rem; }
+.thumbnail-remove { position: absolute; right: -12px; top: -7px; width: 44px; height: 44px; border: 2px solid #fff; border-radius: 50%; background: #9f1239; color: #fff; display: grid; place-items: center; padding: 0; z-index: 2; }
+.empty-state { min-height: 210px; border: 1px dashed #52637b; border-radius: 14px; display: grid; place-content: center; justify-items: center; text-align: center; color: var(--muted); padding: 20px; }
+.empty-state p { margin: 10px 0 3px; }
+.sticky-action { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 6; padding-top: 10px; }
+.sticky-action .button { min-height: 54px; box-shadow: 0 7px 26px #000b; }
+
+.analysis-progress { display: grid; place-content: center; justify-items: center; text-align: center; }
+.spinner { width: 76px; height: 76px; border: 7px solid #203044; border-top-color: var(--blue); border-radius: 50%; animation: spin .9s linear infinite; margin-bottom: 22px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-track { width: min(320px, 80vw); height: 11px; background: #243247; border-radius: 999px; overflow: hidden; }
+.progress-track div { height: 100%; background: var(--blue); transition: width .2s; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.status-banner { border: 2px solid; border-radius: 15px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.status-banner div { display: grid; gap: 2px; }
+.status-banner span, .status-banner small { color: #fff; }
+.status-banner strong { font-size: 1.25rem; }
+.status-pass { border-color: var(--green); background: #0d4427; color: #d5ffe3; }
+.status-fail { border-color: var(--red); background: #5c1028; color: #ffe1e6; }
+.status-warning { border-color: var(--orange); background: #5a2d09; color: #fff0de; }
+.result-photo-viewer { border: 3px solid var(--border); border-radius: 15px; background: var(--card); overflow: hidden; margin-bottom: 11px; }
+.result-photo-viewer.photo-pass { border-color: var(--green); }
+.result-photo-viewer.photo-fail { border-color: var(--red); }
+.result-canvas { display: block; width: 100%; height: auto; background: #020408; }
+.carousel-controls { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px; }
+.carousel-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
+.dot { position: relative; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; }
+.dot::after { content: ""; position: absolute; inset: 15px; border: 2px solid #cbd5e1; border-radius: 50%; background: transparent; }
+.dot.active::after { background: var(--blue); border-color: #fff; }
+.photo-verdict-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 0 9px 8px; }
+.photo-verdict-chips span { text-align: center; border-radius: 7px; padding: 5px 3px; font-size: .72rem; font-weight: 900; border: 1px solid; }
+.photo-verdict-chips .pass { background: #0d4427; border-color: var(--green); }
+.photo-verdict-chips .fail { background: #5c1028; border-color: var(--red); }
+/* NICHT BEWERTBAR ist ein eigener Zustand, nicht "fast bestanden". Neutral
+   und deutlich unterscheidbar — und der Text sagt es ohnehin ("?"), damit
+   der Status nicht allein ueber Farbe transportiert wird. */
+.photo-verdict-chips .unknown { background: #33302a; border-color: var(--amber, #d19a24); }
+.photo-summary { margin: 0 10px 10px; color: var(--muted); text-align: center; }
+.marker-results { border-top: 1px solid var(--border); padding: 10px; }
+.marker-results h3 { margin-bottom: 7px; }
+.marker-results > div { display: grid; grid-template-columns: 28px 1fr; gap: 3px 8px; padding: 6px 0; }
+.marker-results > div > span { grid-row: span 2; width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center; background: #9f1239; font-weight: 900; }
+.marker-results small { color: var(--muted); }
+.verdict-card { display: grid; grid-template-columns: 42px minmax(0, 1fr) 78px; gap: 10px; align-items: start; border: 1px solid var(--border); border-left: 5px solid; border-radius: 13px; background: var(--card); padding: 13px 11px; margin: 9px 0; }
+.verdict-pass { border-left-color: var(--green); }
+.verdict-fail { border-left-color: var(--red); }
+.verdict-unknown { border-left-color: var(--amber, #d19a24); }
+.verdict-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: #172438; }
+.verdict-pass .verdict-icon { color: var(--green); }
+.verdict-fail .verdict-icon { color: var(--red); }
+.verdict-unknown .verdict-icon { color: var(--amber, #d19a24); }
+/* Der Rohbefund bleibt lesbar, aber als solcher gekennzeichnet. */
+.rohbefund-marke { display: inline-block; border: 1px solid var(--border);
+  border-radius: 6px; padding: 1px 6px; margin-right: 4px; font-size: .68rem;
+  font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--muted); }
+.verdict-card h3 { margin: 0 0 2px; }
+.verdict-card p { color: var(--muted); margin: 4px 0 0; line-height: 1.35; }
+.action-hint { margin-top: 8px; border-radius: 8px; background: #3c210b; color: #ffebd2; padding: 7px; font-size: .8rem; }
+/* Prueflisten je Pruefpunkt (RC3). Drei Zustaende statt zwei: der offene
+   Zustand "Nicht bewertbar" bekommt eine eigene Farbe, damit er optisch
+   weder als Freigabe noch als Sperrung gelesen wird. */
+.checkpoint-panel { margin: 9px 0; }
+.checkpoint-panel h3 { margin: 0 0 4px; }
+.checkpoint-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.checkpoint-list li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; align-items: start; border: 1px solid var(--border); border-left: 4px solid; border-radius: 11px; background: var(--elevated); padding: 10px; }
+.checkpoint-pass { border-left-color: var(--green); }
+.checkpoint-fail { border-left-color: var(--red); }
+.checkpoint-open { border-left-color: var(--orange); }
+.checkpoint-icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #172438; }
+.checkpoint-pass .checkpoint-icon { color: var(--green); }
+.checkpoint-fail .checkpoint-icon { color: var(--red); }
+.checkpoint-open .checkpoint-icon { color: var(--orange); }
+.checkpoint-list strong { display: block; overflow-wrap: anywhere; }
+.checkpoint-status { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .02em; color: var(--muted); overflow-wrap: anywhere; }
+.checkpoint-open .checkpoint-status { color: var(--orange); }
+.checkpoint-list p { margin: 4px 0 0; line-height: 1.35; }
+.checkpoint-reason, .checkpoint-manual { display: block; margin-top: 5px; color: var(--muted); line-height: 1.35; overflow-wrap: anywhere; }
+
+.severity-block { display: grid; gap: 6px; align-items: center; }
+.severity { text-align: center; font-weight: 900; }
+.severity-note { text-align: center; font-size: 11px; color: var(--muted); }
+.comment-chips { display: flex; gap: 7px; overflow-x: auto; padding: 3px 1px 8px; }
+.comment-chips button { flex: 0 0 auto; min-height: 44px; padding: 8px 11px; font-size: .78rem; font-weight: 650; }
+.decision-actions { display: grid; gap: 4px; margin-top: 8px; }
+.failed-list { overflow-wrap: anywhere; }
+
+.reference-empty { min-height: 62px; border: 1px dashed var(--border); border-radius: 11px; display: flex; align-items: center; gap: 9px; padding: 10px; color: var(--muted); }
+.floating-reference { width: min(calc(100% - 28px), 704px); margin: -92px auto 100px; position: relative; z-index: 4; }
+.result-reference { margin-top: -98px; }
+.reference-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; background: var(--card); border: 1px solid var(--border); border-radius: 13px; padding: 8px; }
+.reference-comparison figure { margin: 0; min-width: 0; }
+.reference-comparison img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #020408; border-radius: 8px; }
+.reference-comparison figcaption { color: var(--muted); font-size: .72rem; padding-top: 5px; text-align: center; }
+
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; background: #000b; backdrop-filter: blur(5px); padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); display: grid; place-items: center; }
+.modal-scroll { overflow-y: auto; align-items: start; }
+.modal-card { width: min(100%, 600px); max-height: calc(100vh - 24px); overflow-y: auto; border: 1px solid #607089; border-radius: 17px; background: #0b1320; box-shadow: 0 24px 70px #000; padding: 17px; }
+.modal-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.modal-title h2 { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+.segmented { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.segmented button { padding: 8px; }
+.segmented button.active { background: #0879ad; border-color: var(--blue); }
+.checkbox-row { display: flex; gap: 10px; align-items: flex-start; line-height: 1.4; margin: 13px 0; }
+.checkbox-row input { width: 24px; min-width: 24px; min-height: 24px; margin: 0; accent-color: var(--blue); }
+
+.signature-screen { min-height: auto; padding: 0 0 12px; }
+.signature-context { display: grid; gap: 4px; margin-bottom: 11px; }
+.signature-context span { color: var(--muted); }
+.signature-canvas { width: 100%; height: 190px; border: 3px solid #6d7e94; border-radius: 13px; background: #fff; touch-action: none; display: block; }
+.signature-meter { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); padding: 8px 2px 0; font-size: .8rem; }
+.signature-record { border: 1px solid var(--border); border-radius: 13px; background: #fff; color: #111827; padding: 10px; display: grid; grid-template-columns: minmax(0, 170px) 1fr; gap: 12px; align-items: center; }
+.signature-record img { max-height: 75px; }
+
+.filter-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-bottom: 13px; }
+.filter-grid label { display: grid; gap: 5px; }
+.trend-panel { margin-bottom: 2px; }
+.trend-panel summary { min-height: 44px; display: flex; align-items: center; font-weight: 800; cursor: pointer; }
+.trend-panel p { margin: 8px 0 0; }
+.trend-list { display: grid; gap: 7px; margin-top: 9px; }
+.trend-list > div { display: grid; grid-template-columns: 82px minmax(0, 1fr) 42px; gap: 8px; align-items: center; font-size: .76rem; }
+.trend-list span { height: 12px; border: 1px solid #64748b; border-radius: 999px; overflow: hidden; background: #09111e; }
+.trend-list i { display: block; min-width: 2px; height: 100%; background: var(--orange); }
+.trend-list strong { text-align: right; }
+.history-list { display: grid; gap: 9px; }
+.history-card { width: 100%; min-height: 96px; border: 1px solid var(--border); border-radius: 13px; background: var(--card); color: var(--text); display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 9px; text-align: left; }
+.history-card > img { width: 72px; height: 72px; border-radius: 9px; object-fit: cover; }
+.history-card > span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
+.history-card small { color: var(--muted); display: flex; align-items: center; gap: 4px; overflow-wrap: anywhere; }
+.hash-short { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.decision-chip { border: 1px solid; border-radius: 999px; padding: 5px 7px; font-size: .68rem; font-weight: 900; }
+.decision-pass { border-color: var(--green); background: #0d4427; }
+.decision-fail { border-color: var(--red); background: #5c1028; }
+.decision-override { border-color: var(--orange); background: #5a2d09; }
+.record-meta p { margin: 6px 0; overflow-wrap: anywhere; }
+/* Ein SHA-256 ist 64 Zeichen ohne Leerstelle und damit breiter als ein
+   Telefonbildschirm. Ohne Umbruchregel schob diese Zeile die GANZE Seite
+   auf 492 px bei 390 px Fensterbreite — gemessen in Chromium, nicht
+   vermutet. Das Layout wanderte dann seitlich, und die Tabelle war nicht
+   die Ursache, sie sah nur so aus. Umbruch an jeder Stelle: bei einer
+   Pruefsumme gibt es keine sinnvolle Trennstelle. */
+.record-hash { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .75rem; overflow-wrap: anywhere; }
+.report-photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 11px 0; }
+.report-photo-grid figure { margin: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--card); }
+.report-photo-grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.report-photo-grid figcaption { padding: 7px; color: var(--muted); font-size: .7rem; }
+
+.settings-section { margin: 9px 0; }
+.settings-section h3 { display: flex; gap: 7px; align-items: center; }
+.check-row { min-height: 42px; border-top: 1px solid #2b394c; display: grid; grid-template-columns: 24px 1fr auto; gap: 7px; align-items: center; color: var(--muted); }
+.check-row:first-of-type { border-top: 0; }
+.issue-row { border-top: 1px solid #2b394c; padding: 9px 0; display: flex; justify-content: space-between; gap: 8px; }
+.issue-row > span:first-child { display: grid; gap: 3px; }
+.issue-row small { color: var(--muted); }
+.issue-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.issue-actions button { min-height: 44px; padding: 7px 9px; font-size: .75rem; }
+.swab-result h2 { margin-bottom: 6px; }
+.swab-change { display: grid; gap: 5px; border-top: 1px solid var(--border); padding-top: 10px; }
+.swab-change strong { font-size: 1.25rem; }
+.swab-change small { color: var(--muted); line-height: 1.4; }
+.global-error { position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80; width: min(calc(100% - 24px), 620px); border: 2px solid var(--red); border-radius: 13px; background: #5c1028; color: #fff; padding: 9px 10px; display: grid; grid-template-columns: 22px 1fr 46px; gap: 8px; align-items: center; box-shadow: 0 10px 40px #000c; }
+
+@media (max-width: 480px) {
+  .screen { padding-left: 13px; padding-right: 13px; }
+  .verdict-card { grid-template-columns: 38px minmax(0, 1fr); }
+  .severity-block { grid-column: 2; grid-template-columns: 42px 1fr; }
+  .history-card { grid-template-columns: 60px minmax(0, 1fr); }
+  .history-card > img { width: 60px; height: 60px; }
+  .history-card .decision-chip { grid-column: 2; justify-self: start; }
+  .manual-code { grid-template-columns: 1fr; }
+  .manual-code .button { width: 100%; }
+  .floating-reference { width: calc(100% - 26px); }
+  .modal-card { padding: 13px; }
+}
+
+@media (max-width: 360px) {
+  .home-grid, .capture-actions, .camera-actions, .filter-grid, .report-photo-grid { grid-template-columns: 1fr; }
+  .reference-comparison { grid-template-columns: 1fr; }
+  .photo-verdict-chips { font-size: .68rem; }
+}
+
+/* ─── P3 · geführte Aufnahmesequenz ───────────────────────────────────────
+   Die drei Lichtpositionen als Liste, Status nie nur über Farbe: jede
+   Zeile trägt ein Symbol UND einen Text. */
+.sequenz-panel { margin: 10px 0; }
+.sequenz-schritt { margin: 8px 0 4px; font-size: 1.02rem; }
+.sequenz-liste { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.sequenz-liste li { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--elevated); }
+.sequenz-liste li > span:first-of-type { flex: 1; min-width: 0; }
+.sequenz-status { font-size: .76rem; color: var(--muted); }
+.sequenz-da { border-color: #2f7d4f; }
+.sequenz-da svg { color: var(--green); }
+.sequenz-offen svg { color: var(--orange); }
+.thumbnail-licht { display: block; font-size: .6rem; line-height: 1.2; color: var(--muted); max-width: 74px; overflow-wrap: anywhere; }
+
+/* ─── Screening-Tabelle ───────────────────────────────────────────────────
+   Die Kandidatentabelle hat sieben Spalten und ist auf einem Telefon
+   breiter als der Bildschirm. Bis rc.4.27 gab es fuer .table-scroll GAR
+   KEINE Regel — der Bereich war ein gewoehnliches div, und die Tabelle
+   schob die ganze Seite auf. Dann wandert das Layout seitlich, und
+   Bedienelemente am rechten Rand sind nicht mehr erreichbar.
+
+   Die Breite wird hier eingefangen: nur DIESER Bereich scrollt waagerecht,
+   die Seite nicht. min-width: 0 ist noetig, weil ein Grid- oder
+   Flex-Kind sonst nicht unter seine Inhaltsbreite schrumpft und
+   overflow-x wirkungslos bleibt. */
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.screening-table { border-collapse: collapse; font-size: .78rem; white-space: nowrap; }
+.screening-table th, .screening-table td { padding: 5px 9px; text-align: left; border-bottom: 1px solid var(--border); }
+.screening-table th { font-weight: 600; }
+/* Bewusst KEIN overflow: hidden auf dem Panel: es wuerde eine Ueberbreite
+   der Tabelle stillschweigend abschneiden statt sie scrollbar zu machen —
+   und die Messung waere dann gruen, obwohl Spalten unerreichbar sind.
+   Eingefangen wird die Breite genau eine Ebene tiefer, in .table-scroll. */
+.screening-state { margin: 4px 0 2px; }
+/* Zeile und Bildmarkierung gehoeren zusammen. Der Knopf in der Spalte
+   "Kandidat" ist ein nativer Button - keine anklickbare Zelle. Status nie
+   nur ueber Farbe: die gewaehlte Zeile traegt zusaetzlich aria-pressed,
+   und die Markierung im Bild nennt die Kennung im Text darunter. */
+.screening-waehlen { min-height: 32px; padding: 3px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--elevated); color: var(--text); font-weight: 750; font-size: .74rem; }
+.screening-waehlen[aria-pressed="true"] { background: #facc15; border-color: #facc15; color: #201a00; }
+/* Tiefe gegen die Vorgabegrenze. Die Empfehlung ist bewusst NICHT
+   nur farbig: Status nie allein ueber Farbe (Leitplanke Accessibility).
+   Der Text traegt die Aussage, die Farbe hebt sie nur hervor. */
+.depth-empfehlung { color: var(--warn, #b45309); font-weight: 750; }
+.depth-werte { display: grid; grid-template-columns: 1fr; gap: 4px; margin: 8px 0 0; }
+.depth-werte > div { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.depth-werte dt { font-weight: 700; font-size: .78rem; color: var(--muted); min-width: 9rem; }
+.depth-werte dd { margin: 0; font-size: .85rem; overflow-wrap: anywhere; }
+.screening-gewaehlt td { background: rgba(250, 204, 21, .10); }
+.screening-grind td { color: var(--muted); }
+.screening-markierung { margin: 10px 0 0; }
+.screening-markierung canvas { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 10px; display: block; }
+.screening-markierung figcaption { text-align: left; margin-top: 5px; }
+.screening-ohne-masse { text-align: left; }
+/* Der nachtraegliche Hinweis zu einem historischen Befundtext. Abgesetzt,
+   damit er nicht wie Teil des Originalbefunds gelesen wird. */
+.checkpoint-historic {
+  display: block; margin-top: 4px; padding: 4px 8px;
+  border-left: 3px solid var(--warning, #b45309);
+  background: rgba(180, 95, 6, .08);
+  font-style: italic;
+}
+
+@media print {
+  body { background: #fff; color: #111; }
+  .screen { width: 100%; max-width: none; padding: 12mm; }
+  .screen-header .icon-button, .button, .app-header, .global-error { display: none !important; }
+  .panel, .verdict-card, .checkpoint-list li, .report-photo-grid figure { background: #fff; color: #111; break-inside: avoid; }
+}
+
+/* ─── Prüffläche ──────────────────────────────────────────────────────────
+   Der Rahmen liegt über dem Bild und zeigt, was tatsächlich bewertet wird.
+   Er ist kein Bedienelement — gesetzt wird er mit den Reglern darunter,
+   weil ein 44-px-Schieberegler mit Handschuhen zuverlässiger zu treffen
+   ist als ein Ziehgriff an einer Ecke. */
+.flaeche-rahmen {
+  position: absolute; z-index: 2; pointer-events: none;
+  border: 2px dashed var(--blue);
+  box-shadow: 0 0 0 9999px rgba(2, 4, 8, .48);
+}
+.flaeche-panel { border-top: 1px solid var(--border); margin-top: 4px; padding: 12px 11px 4px; }
+.flaeche-panel h3 { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+/* Status nie nur über Farbe: die unangetastete Voreinstellung trägt einen
+   Text, nicht bloss einen anderen Rahmen. */
+.flaeche-vorgabe {
+  margin: 0 0 8px; padding: 7px 9px; border-radius: 8px;
+  border-left: 3px solid var(--orange); background: rgba(154, 75, 8, .18);
+  color: #ffeedd; font-size: .8rem; line-height: 1.4;
+}
+.flaeche-regler { display: grid; gap: 6px; }
+.flaeche-regler label { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 3.5rem; gap: 9px; align-items: center; }
+.flaeche-regler span { font-size: .82rem; font-weight: 750; color: #dbe5f2; }
+.flaeche-regler input[type="range"] { width: 100%; min-height: 44px; padding: 0; background: transparent; border: 0; accent-color: var(--blue); }
+.flaeche-regler output { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: .82rem; }
+.flaeche-aktionen { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 8px; }
+.flaeche-aktionen .button { margin: 0; }
+/* Der Geltungsbereich am Ergebnis. Ohne ihn wird aus "in diesem Ausschnitt
+   nichts gefunden" stillschweigend "das Teil ist sauber". */
+.geltungsbereich {
+  margin: 0; padding: 9px 10px; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: .78rem; line-height: 1.45;
+}
+.geltungsbereich strong { color: var(--text); }
+.geltungsbereich svg { vertical-align: -2px; color: var(--blue); }
+
+@media (max-width: 480px) {
+  .flaeche-regler label { grid-template-columns: 4.5rem minmax(0, 1fr) 3rem; gap: 6px; }
+  .flaeche-aktionen { grid-template-columns: 1fr; }
+}
+
+/* Waehrend die Kamera offen ist, klebt die Analyse-Schaltflaeche NICHT:
+   sie lag sonst ueber dem Kamerabild und verdeckte Ausloeser und
+   "Kamera stoppen" (Gegenpruefung an rc.4.40, IMG_6516). Sie bleibt
+   sichtbar und bedienbar, nur im Fluss statt darueber. */
+.analyse-aktion { position: static; padding-top: 10px; }
+.analyse-aktion .button { min-height: 54px; }

@@ -1,0 +1,13 @@
+node_modules
+dist
+.vercel
+*.local
+.DS_Store
+npm-debug.log*
+
+# Claude Code Werkzeug-Konfiguration (maschinenspezifisch, gehört nicht ins Repo)
+.claude/
+
+# Python-Bytecode der Werkbank-Werkzeuge: maschinen- und versionsabhaengig
+__pycache__/
+*.pyc

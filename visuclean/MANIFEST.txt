@@ -1,0 +1,841 @@
+VisuClean - Browser/PWA-Demonstrator
+=========================================
+
+Version           8.3.0-rc.4.45-camera.1
+Pflichtenheft     v2.5C / Korrekturkandidat 8.3.0-rc.4.45-camera.1
+Basis             8.3.0-rc.4.31
+                  Geschwisterlinie zu rc.4.6. Der Detektor aus jener Linie
+                  wurde nicht uebernommen, sondern in rc.4.17 als
+                  src/scratchScreening.js neu gebaut; er ist enthalten und
+                  aktiv. Bis rc.4.19 stand hier noch "kein
+                  scratchScreening" — im selben Dokument, das die Datei
+                  weiter unten auflistet. Befund der unabhaengigen
+                  Gegenpruefung, zutreffend.
+Bedienlauf        Erster echter Bedienlauf am 11.09.2026 (lokal, Browser).
+                  Gefunden und behoben: ein Operator konnte eine
+                  dokumentierte Abweichung nicht mehr als FAIL abschliessen
+                  ("QA_ROLE_REQUIRED: FINAL_FAIL erfordert exakt die Rolle
+                  QA Manager"). Ursache: derivePreviousState behauptete
+                  PENDING_QA, sobald eine Abweichung vorlag — auch bei einem
+                  Einschritt-Abschluss, der nie wartend WAR. Zusammen mit
+                  der in rc.4.11 eingefuehrten Regel "aus PENDING_QA fuehrt
+                  nur die QA heraus" sperrte das den Pruefer aus.
+Installationslauf Erste echte Installation auf Windows am 11.09.2026.
+                  npm run verify brach ab: ausschlusstest.mjs baute den
+                  Wurzelpfad aus dem URL-Feld pathname. Unter Windows
+                  liefert das "/C:/Users/..." mit fuehrendem Schraegstrich,
+                  woraus join() "C:\C:\Users\..." macht (ENOENT).
+                  Zweiter, stillerer Fehler derselben Klasse: die
+                  Map-Schluessel kamen aus relative() und trugen unter
+                  Windows "\" statt "/", weshalb inhalt.get("src/App.jsx")
+                  ins Leere lief und Z-01 ohne Begruendung rot wurde.
+                  Beide behoben; X-09 bis X-12 wachen mechanisch dagegen.
+                  Beide Fehler waren auf Linux unsichtbar — alle
+                  vorherigen Abnahmen liefen dort.
+                  Ab rc.4.12 kommt PENDING_QA nur noch von einem
+                  TATSAECHLICHEN Vorgaenger (supersedesId). Ein FAIL ist
+                  keine Freigabe: "nachgereinigt und immer noch nicht
+                  sauber" darf ein Pruefer allein feststellen.
+                  Belegt durch S48.
+Bedienpruefung    Zwei-Personen-Durchlauf am 11.09.2026 von Hand belegt:
+                  Uebergabe an die QA, Sitzungsende, Freigabe durch einen
+                  zweiten Benutzer. Alle drei Invarianten bestaetigt - der
+                  wartende Datensatz blieb unveraendert, die Genehmigung
+                  ist ein eigener Eintrag, ein zweiter Entscheid wurde
+                  unter Nennung des bestehenden abgewiesen.
+                  Dabei drei Bedienfehler gefunden, alle im QA-Schirm:
+                  (1) falsche Zugangsdaten ohne jede Rueckmeldung - der
+                      Fehlertext lag in submit() und war unerreichbar,
+                      weil submit nur mit gueltigem approver existierte;
+                  (2) autoComplete username/current-password liess den
+                      Browser die Kennung des PRUEFERS in das Feld des
+                      GENEHMIGERS fuellen, auf einem Vier-Augen-Schirm;
+                  (3) "Durch QA freigeben" wurde angeboten, wo weder PASS
+                      noch Override erreichbar waren - der Fehlschlag kam
+                      erst nach Anmeldung, Begruendung und Signatur.
+                  Behoben; U19 bis U21 wachen dagegen. Die erreichbaren
+                  Entscheide kommen aus qaDecisionOptions in lifecycle.js,
+                  damit Oberflaeche und Grenze nicht auseinanderlaufen.
+                  Keiner der drei wurde von den 351 Pruefungen gefunden:
+                  sie pruefen, ob die Grenze haelt, nicht ob ein Mensch
+                  durch die Tuer kommt. Die Grenzen selbst hielten.
+Protokolltext     Aus demselben Bedienlauf, am erzeugten PDF gefunden:
+                  ueber einer QA-SPERRUNG stand "Freigabe zu: <ID>". Der
+                  Entscheid war eine Sperrung; das Dokument behauptete an
+                  dieser Stelle das Gegenteil. Eine falsche Etikettierung
+                  in einem GMP-Protokoll ist inhaltlich unwahr, nicht
+                  bloss unschoen. Jetzt neutral "QA-Entscheid zu".
+                  Daneben "Geprueffte Revision" mit doppeltem f, auch in
+                  zwei Fehlermeldungen der Speichergrenze. Beides behoben;
+                  P6 und P7 pruefen es am erzeugten Dokument.
+Meldungstext      Vom Auftraggeber unmittelbar danach gefunden: dieselbe
+                  Unwahrheit stand noch in drei Meldungen der
+                  Speichergrenze. Ueber einer SPERRUNG meldete die App
+                  "Diese Revision wurde bereits freigegeben; eine zweite
+                  Freigabe ist nicht zulaessig". Die drei Meldungen gelten
+                  fuer JEDEN QA-Entscheid und heissen jetzt neutral
+                  "QA-Entscheid". Die vier Stellen, die tatsaechlich eine
+                  Freigabe bezeichnen (Signaturbedeutungen, System-FAIL,
+                  NOT_VERIFIED), bleiben unveraendert - dort ist das Wort
+                  richtig. Belegt durch S49.
+Kratzer-Screening Neu in rc.4.17: src/scratchScreening.js schliesst die
+                  Luecke, die der Auftraggeber benannt hat. Gemessen an der
+                  realen Kontrollaufnahme dry-stainless-control.png:
+                  Der KERN findet dort KEINEN Kratzer, bei keiner Laenge -
+                  sein Tor (edgeFrac < 0.06 UND tvFlat < 0.035) ist wegen
+                  tvFlat 0.0451 geschlossen. Selbst ein Kratzer ueber 80 %
+                  der Bildkante ergibt "Intakt".
+                  Das SCREENING findet denselben Kratzer quer zum Schliff
+                  ab 8 % der kurzen Bildkante auf Platz 1 der sortierten
+                  Liste. Es schaltet die Suche nicht ein, sondern
+                  unterdrueckt die geschaetzte Schliffrichtung - Kanten
+                  laengs und quer werden GETRENNT gelabelt, sonst
+                  verschmilzt ein Querkratzer an jeder Kreuzung mit dem
+                  Schliffmuster (gemessen: Platz 1 ging dann an eine
+                  Schliffspur mit 2,5 Grad Winkelabstand).
+                  GEMESSENE GRENZE: bis etwa 20 Grad Winkelabstand zur
+                  Schliffrichtung wird ein Kratzer NICHT gefunden. Das ist
+                  eine Grenze des Einzelbildes, keine Schwellenfrage - der
+                  vorgesehene Ausweg ist die Mehrwinkel-Fusion, die als
+                  detect-Parameter jetzt vom Screening gespeist wird
+                  (bis rc.4.16 stand dort null).
+                  Das Screening fuegt nur hinzu und sortiert; es aendert
+                  kein Urteil und erzeugt kein PASS. SC-01 und SC-02
+                  sichern diese Bauform ab. Alle Stellwerte sind als
+                  Stellwerte kommentiert, nicht als validierte Schwellen.
+Drei Stufen       rc.4.18 stellt die Spezifikation des Auftraggebers
+                  vollstaendig, in der einzigen Anordnung, die ohne
+                  Kalibrierung zulaessig ist:
+                    analysisCore      ENTSCHEIDET  (RC3, unveraendert)
+                    scratchScreening  ZEIGT HIN    (Kandidaten, sortiert)
+                    scratchClassifier SORTIERT UM  (Random Forest)
+                  Weder Screening noch Wald duerfen ein Urteil aendern,
+                  einen Kandidaten entfernen oder ein PASS erzeugen. Ein
+                  ungenauer Wald macht die Liste schlechter sortiert,
+                  niemals ein Ergebnis falsch. SC-01/02 und SC-09/11
+                  sichern das ab.
+                  OHNE MODELL IST DER WALD INERT (SC-09): es gibt keine
+                  gelabelten Bilder und keine Ground Truth aus Tastschnitt-
+                  oder Replika-Messung. werkbank/train_rf.py weist Labels
+                  mit Quelle "REGEL" ausdruecklich zurueck - ein Wald, der
+                  auf den Ausgaben der eigenen Regel trainiert, lernt die
+                  Regel und nicht die Wirklichkeit.
+                  Merkmalsvertrag: FEATURE_ORDER in scratchClassifier.js.
+                  Ein Modell mit abweichender Reihenfolge wird ABGELEHNT
+                  (SC-10), und SC-14 liest die Reihenfolge im Python-Code
+                  mechanisch gegen - sonst trainiert die Werkbank auf einer
+                  anderen Spaltenfolge, als die App auswertet.
+                  Konfiguration: public/screening.config.json, am Server
+                  austauschbar. Jeder Wert wird geprueft; unplausible Werte
+                  werden EINZELN verworfen und benannt, nie still (SC-16).
+Messreihe         werkbank/messreihe.mjs laesst alle Stufen ueber einen
+                  Bilderordner laufen und schreibt die Merkmalstabelle als
+                  CSV - fertig zum Labeln. Damit wird aus "wir brauchen
+                  Daten" ein Arbeitsschritt mit Werkzeug.
+                  Anlass ist eine Messung an den drei realen Aufnahmen:
+                  ACHT von ELF Kernmerkmalen trennen "nass unscharf" von
+                  "trocken scharf" - nur gradMean nicht, und genau das
+                  benutzt die heutige Naesse-Regel. Das spricht dafuer,
+                  dass die Achse falsch gewaehlt ist und nicht die
+                  Information fehlt. BELEGT IST ES NICHT: bei drei Szenen
+                  und elf Merkmalen entsteht eine solche Trennung leicht
+                  zufaellig, und sie beschreibt vermutlich die Beleuchtung.
+                  Das Skript sagt diese Einschraenkung bei jedem Lauf an
+                  und nennt den Richtwert von etwa 20 unabhaengigen
+                  Aufnahmen je Klasse. Es weist ausserdem JPEG zurueck:
+                  Kompressionsartefakte erzeugen genau die Mikrokanten, an
+                  denen Kratzer- und Naessemerkmale haengen.
+                  SC-17 haelt die Messreihe am Merkmalsvertrag fest.
+Nacharbeit rc.4.20 Unabhaengige Gegenpruefung an rc.4.19. Ihre Befunde
+                  wurden einzeln reproduziert, bevor etwas geaendert wurde.
+                  Umgesetzt sind S1, S4, S5, S7 und S8:
+                  S1 Messkette: messreihe.mjs schrieb semikolongetrennt,
+                     train_rf.py las den Komma-Standard - die Kette war
+                     unbenutzbar. Das Trennzeichen ist jetzt auf beiden
+                     Seiten eine benannte Konstante. Zweiter, vom ersten
+                     verdeckter Bruch: der Spaltencheck pruefte auch die
+                     Labels, obwohl eine frisch gemessene Tabelle
+                     naturgemaess ungelabelt ist. Spalten- und Labelvertrag
+                     sind getrennt. SC-18 FUEHRT die Kette aus statt
+                     Quelltext zu lesen; fehlt python3, gilt sie als NICHT
+                     AUSGEFUEHRT, nicht als bestanden.
+                  S4 Produktpfad: das Screening lief nur in der Fusion und
+                     war weder sichtbar noch gespeichert. Es laeuft jetzt
+                     je Einzelbild, die Kandidaten stehen im Datensatz, in
+                     der Detailansicht (U22) und im PDF (P8). Gespeichert
+                     wird die sortierte Spitze je Aufnahme plus die vollen
+                     Zahlen - alle Kandidaten sprengen Datensatz und PDF
+                     (gemessen 799 Zeilen fuer drei Aufnahmen), die
+                     Gesamtzahl bleibt sichtbar. U23 verbietet jede
+                     Tiefen-, Harmlosigkeits- und Entstehungsaussage.
+                     NICHT umgesetzt: Kandidat als manuelle Feststellung
+                     uebernehmen oder verwerfen. Das beruehrt den
+                     QA-Triggerpfad und braucht eigene rote Gegenproben.
+                  S5 Konfiguration: public/screening.config.json wird jetzt
+                     im Produktpfad geladen, geprueft und angewandt; der
+                     SHA-256 der wirksamen Fassung steht im Datensatz und
+                     im PDF (P9). Eine spaetere Aenderung deutet damit
+                     keine gespeicherte Pruefung um. Bei Abrufproblem
+                     greifen die paketgebundenen Werte MIT Begruendung in
+                     quelle, nie stillschweigend.
+                     Dafuer musste V32 angefasst werden - eine Wache, die
+                     jeden fetch in App.jsx verbot. Sie wurde PRAEZISIERT,
+                     nicht aufgeweicht: zusaetzlich verboten sind jetzt
+                     sendBeacon und WebSocket, die vorher ungeprueft
+                     blieben, sowie jeder Abruf mit absoluter oder
+                     variabler Adresse. Erlaubt ist genau CONFIG_PFAD.
+                     Vier Sabotagen belegen, dass sie greift.
+                  S7 Labelsprache: MIKRO_HARMLOS und TIEF_RELEVANT
+                     behaupteten eine Tiefe, die aus einem Foto nicht
+                     messbar ist. Jetzt ATTENTION_LOW / ATTENTION_HIGH.
+                     X-03 faengt solche Woerter nicht, weil es Zahlen mit
+                     Millimeter sucht - deshalb SC-19 als eigene Wache.
+                  S8 Manifest und Installer: der Kopf behauptete "kein
+                     scratchScreening", waehrend dieselbe Datei es unten
+                     auflistet. Entfernt. Die Suitenzahl wird jetzt
+                     ABGELEITET statt behauptet (stand auf 19 bei 20
+                     Suiten). Der Installer prueft beide von Vite
+                     erlaubten Node-Bereiche; Node 21.x und 22.0 bis 22.11
+                     werden abgewiesen.
+                  OFFEN aus derselben Pruefung: S2 Datenhygiene, S3
+                  getrennte Modelle je Kriterium, S6 leckagefreies
+                  Training. Sie bauen Maschinerie fuer Daten, die es noch
+                  nicht gibt.
+Nacharbeit rc.4.21 Die geschaetzte Vorzugsrichtung wird ANGEZEIGT und
+                  DOKUMENTIERT. Keine neue Schaltschwelle: kein Urteil und
+                  keine Reihenfolge im Datensatz haengt neu an ihr.
+                  Wortlaut: Richtung, Rohwert und Winkelfaecherzahl stehen
+                  nebeneinander, dazu "Zuverlaessigkeit nicht kalibriert".
+                  KEINE Prozentangabe - 0,141 ist keine Sicherheit von
+                  14,1 Prozent - und keine Einordnung wie "schwach
+                  bestimmt", die eine Kalibrierung behaupten wuerde, die
+                  es nicht gibt. U24 und P10 erzwingen beides und fallen
+                  bei einem Prozentzeichen durch.
+                  Die AUSWIRKUNG steht daneben: wie viele Kandidaten wegen
+                  ihrer Richtung niedriger bewertet wurden. Ohne diese
+                  Zahl bleibt unsichtbar, was die Abwertung getan hat.
+                  Zweite Rangfolge: jeder Kandidat traegt zusaetzlich
+                  relevanceScoreUngerichtet - dieselbe Bewertung ohne den
+                  Richtungsfaktor. Beide Werte stehen in Datensatz,
+                  Anzeige und PDF; die Anzeige kann zwischen beiden
+                  Rangfolgen umschalten. Das aendert nur die Reihenfolge
+                  der Zeilen, nie einen Wert und nie ein Urteil (SC-20).
+                  Warum das noetig ist, ist an den drei realen Aufnahmen
+                  GEMESSEN: die Richtungsabwertung verschiebt einen
+                  Kandidaten um bis zu 338 Plaetze.
+                  Was die Richtungsstaerke aussagt, ist ebenfalls gemessen
+                  und in SC-21 festgehalten. Eine fruehere Fassung dieses
+                  Tests behauptete, mehr Winkelfaecher ergaeben stets
+                  einen kleineren Spitzenanteil. Das ist falsch und der
+                  Test bestand aus dem falschen Grund (0,888761 gegen
+                  0,888739 - Rauschen). Richtig ist: bei klarer
+                  Vorzugsrichtung aendert die Faecherzahl kaum etwas, ohne
+                  Vorzugsrichtung bricht der Wert ein (0,0881 auf 0,0523).
+                  Der Wert ist daher nur bei GLEICHER Faecherzahl
+                  vergleichbar - deshalb steht orientationBins im
+                  Datensatz und im PDF neben ihm.
+                  Was das fuer die drei realen Aufnahmen heisst, ist der
+                  Grund fuer "anzeigen, nicht schalten": sie liegen bei
+                  0,141 / 0,050 / 0,033. Ein klarer Schliff liefert im
+                  Testbild 0,889, eine richtungslose Flaeche 0,052 bis
+                  0,088. Die realen Aufnahmen sind damit nicht sicher von
+                  "keine Vorzugsrichtung" zu unterscheiden. Auf einer so
+                  unsicheren Groesse wird nichts geschaltet.
+                  Das Richtungshistogramm bleibt in der WERKBANK: die
+                  Messreihe schreibt eine eigene Datei
+                  <tabelle>_richtungshistogramm.csv mit allen Faechern,
+                  den zwei staerksten Richtungen und ihrem Abstand. Im
+                  Pruefdatensatz haette es nur Ballast erzeugt.
+                  Die Messreihe protokolliert beide Rangfolgen parallel
+                  (relevanz_ungerichtet, rang_ungerichtet). Die Spalten
+                  stehen NEBEN dem Merkmalsvertrag, nicht in ihm:
+                  FEATURE_ORDER bindet das Modell und bleibt bei sechs
+                  Merkmalen.
+                  Tippfehler "Schliffl inien" korrigiert.
+                  WEITER OFFEN: die Richtungsschaetzung ist unveraendert
+                  nicht kalibriert, es gibt kein trainiertes Modell, und
+                  keine Trefferquote ist belegt.
+Nacharbeit rc.4.22 Aus dem ersten echten Handy-Prueflauf auf einem realen
+                  Bauteil. Drei Punkte, einer davon ein Fehler, den nur ein
+                  echter Lauf zeigen konnte.
+                  1 GESPEICHERTE SPITZE (Fehler): ausgewaehlt wurde nach der
+                     GERICHTETEN Rangfolge, also nach derjenigen, die eine
+                     nicht kalibrierte Richtungsschaetzung mitbewertet.
+                     Gemessen an dry-stainless-control.png: sechs der zehn
+                     bestplatzierten Kandidaten der ungerichteten Rangfolge
+                     lagen auf den gerichteten Plaetzen 36, 46, 52, 54, 55
+                     und 59 - bei 59 Kandidaten. Einer war der letzte. Sie
+                     wurden nicht gespeichert, standen also weder im
+                     Datensatz noch im PDF, und die in rc.4.21 eingebaute
+                     Umschaltung konnte sie nicht zurueckholen: man kann
+                     nur zeigen, was gespeichert wurde. Jetzt wird die
+                     VEREINIGUNG beider Spitzen gespeichert, hoechstens
+                     das Doppelte. SC-22 belegt es am
+                     echten Bild.
+                  2 STANDARDSORTIERUNG: Bildschirm und PDF ordnen jetzt
+                     nach der Relevanz OHNE Richtungsabwertung, und das PDF
+                     benennt seine Ordnung. Grund: auf dem realen Teil lag
+                     die Richtungsstaerke bei 0,049 - unter dem Wert einer
+                     Flaeche voellig ohne Vorzugsrichtung (0,056 bei 36
+                     Faechern) - und dennoch wurden 19 von 66 Kandidaten
+                     deswegen niedriger bewertet. Die ungerichtete
+                     Rangfolge unterdrueckt niemanden und braucht keine
+                     kalibrierte Zahl. KEINE Schaltschwelle: es wird nicht
+                     ab einem Wert umgeschaltet, die Voreinstellung ist
+                     schlicht die vorsichtigere. Die gerichtete bleibt
+                     umschaltbar, beide Werte stehen je Kandidat da.
+                     U25 und P11.
+                  3 EINE QUELLE FUER DIE FORMULIERUNG: der Pruefpunkt
+                     "Rueckstaende / Sauberkeit" reichte den Kerntext
+                     "Organische Rueckstaende (braun/gelb)" roh durch,
+                     waehrend die Ergebnisanzeige denselben Befund bereits
+                     richtigstellte. Auf dem Handy standen beide Saetze
+                     untereinander; man liest den oberen zuerst. Die
+                     Korrektur liegt jetzt in src/verdictWording.js, von
+                     assessment.js UND i18n.js genutzt. A24 prueft die
+                     GLEICHHEIT, nicht den Wortlaut - ein Test auf einen
+                     bestimmten Satz haelt nur bis zur naechsten
+                     Umformulierung. analysisCore.js bleibt byte-identisch;
+                     der Rohcode ORGANIC_RESIDUE bleibt im Datensatz.
+                  AUFLOESUNGSVERGLEICH (Messung, keine Aenderung):
+                     werkbank/aufloesungsvergleich.mjs. Anlass war das
+                     Aufnahmeprofil des echten Laufs: 900x1600 -> 360x640,
+                     also 40 Prozent. Gemessen an den vorliegenden
+                     Aufnahmen: bei 40 Prozent ueberleben von den zehn
+                     auffaelligsten Stellen der vollen Aufloesung nur noch
+                     zwei (dry-stainless-control), und die Kandidatenzahl
+                     verhaelt sich nicht einmal monoton (59 - 23 - 65 -
+                     17). Die geschaetzte Vorzugsrichtung springt bei
+                     niedriger Richtungsstaerke von 42,5 ueber 62,5 und
+                     57,5 auf 112,5 Grad - unabhaengige Bestaetigung, dass
+                     sie dort nichts traegt.
+                     GRENZE: die vorliegenden Realaufnahmen sind bereits
+                     480x640. Echte 900x1600-Originale liegen nicht vor.
+                     Der Lauf zeigt, was beim Verkleinern VERLORENGEHT,
+                     nicht was bei voller Kameraaufloesung zusaetzlich
+                     gefunden wuerde.
+                     Es wurde NICHTS daraus abgeleitet. SC-23 schreibt die
+                     sieben Stellwerte auf ihren dokumentierten Zahlen
+                     fest: eine Verschiebung ist moeglich, aber nicht
+                     nebenbei - sie muss auch dort nachgezogen werden.
+Nacharbeit rc.4.23 Der Service Worker lieferte nach jeder Auslieferung
+                  genau eine Sitzung lang still die VORVERSION.
+                  Aufgefallen ist es nur am Geraet: die frisch
+                  ausgelieferte Preview zeigte rc.4.21, waehrend jede
+                  Textpruefung gruen war. V30 liest den Quelltext - das
+                  belegt, DASS es einen Cache gibt, nicht WAS er
+                  ausliefert.
+                  Ursache: die Auslieferung war cache-first OHNE Ausnahme
+                  fuer das Dokument. Der Browser bekam die alte
+                  index.html aus dem Cache, die auf die alten, gehashten
+                  Bundles zeigte - eine in sich stimmige Vorversion.
+                  skipWaiting und clients.claim sorgten dafuer, dass
+                  spaetestens der zweite Aufruf stimmte; die eine Sitzung
+                  dazwischen blieb unsichtbar.
+                  Warum das mehr ist als ein Schoenheitsfehler: es trennt
+                  "freigegeben" von "in Benutzung", ohne dass es von innen
+                  erkennbar waere. rc.4.22 hatte einen echten Fehler
+                  behoben (Kandidaten, die gar nicht erst gespeichert
+                  wurden); im Feld haette ein Pruefer weiter mit der
+                  fehlerhaften Fassung gearbeitet, waehrend der Stand als
+                  behoben gilt. Ein verschleierter Zustand verstoesst
+                  gegen Leitplanke 10.
+                  Behoben: fuer NAVIGATIONSANFRAGEN Netz zuerst, Cache als
+                  Rueckfall. Alles andere bleibt cache-first - die
+                  Bauartefakte tragen einen Inhalts-Hash im Dateinamen,
+                  ein altes Bundle unter altem Namen ist nie die falsche
+                  Datei, und ein Netzabruf dafuer waere reiner Aufwand.
+                  Die Offline-Zusage ist unberuehrt: ohne Netz schlaegt
+                  der Versuch fehl und der Cache traegt.
+                  DOKUMENT_NETZ_MS = 2000 ist neu und als Stellwert
+                  kommentiert. Er beeinflusst kein Urteil, keine
+                  Reihenfolge und keinen Befund - nur die Wartezeit auf
+                  das Netz. Ohne ihn tauschte man einen stillen Altstand
+                  gegen eine App, die bei halb offenem WLAN gar nicht
+                  startet; das waere der schlechtere Handel.
+                  Kein Widerspruch zu Leitplanke 1: verboten ist der
+                  stille Netzwerk-Fallback fuer Bild- und Analysedaten.
+                  Hier wird die eigene index.html von derselben Origin
+                  geholt, ohne Nutzlast; Fremd-Origins bleiben
+                  ausgeschlossen.
+                  V39 bis V42 FUEHREN public/sw.js in einem Pruefstand aus
+                  statt ihren Text zu lesen: V39 mit Netz gewinnt das
+                  Netz, V40 ohne Netz traegt der Cache, V41 gehashte
+                  Bauartefakte ohne zusaetzlichen Netzverkehr, V42 eine
+                  haengende Anfrage faellt auf den Cache zurueck.
+                  V40 und V41 waren schon vor der Aenderung gruen - sie
+                  halten fest, was NICHT kaputtgehen darf.
+                  Der Pruefstand meldet Fehler und Haenger als
+                  durchgefallene Pruefung, statt den Lauf abzureissen.
+                  Beides trat bei den Sabotageproben auf und haette sonst
+                  verdeckt, WELCHE Zusage gebrochen ist.
+Nacharbeit rc.4.24 Ein Falsch-PASS bei "Trocken", gefunden im echten
+                  Prueflauf auf einem realen Bauteil: eine sichtbar von
+                  Tropfen bedeckte Edelstahlflaeche kam als "Keine
+                  sichtbare Feuchtigkeit - Bestanden" heraus. Das ist ein
+                  PASS bei einem der drei GMP-Kriterien.
+                  URSACHE, an den Zahlen des Protokolls nachvollzogen:
+                  Das Trocken-Urteil kennt drei Wege zu einem FAIL.
+                  Glanzpunkte (bfr > 0.04) griffen nicht - diffuses Licht
+                  erzeugt keine. Dunkle nasse Flaeche (lm < 0.22) griff
+                  nicht, die Helligkeit lag bei 43 Prozent. Bleibt
+                  VISIBLE_MOISTURE_TEXTURE, der EINZIGE Weg fuer Naesse
+                  ohne Glanz - und er haengt vollstaendig an Mikrokanten.
+                  Genau die waren weg: das Aufnahmeprofil meldete 900x1600
+                  auf 360x640, also 40 Prozent. Im selben Protokoll stand
+                  tvFlat 0.0026, das 7,7-fache UNTER der Schwelle. Eine
+                  nasse, gebuerstete Edelstahlflaeche ist nicht
+                  strukturlos; diese Zahl beschreibt nicht das Bauteil,
+                  sondern was von ihm uebrig war.
+                  WARUM DIE VORHANDENE WACHE SCHWIEG: "kein PASS aus
+                  Nichtwissen" erkannte unzuverlaessige Kantenevidenz
+                  daran, dass Oberflaeche oder Korrosion NICHT BEWERTBAR
+                  sind. Ein Punkt wird aber nur dann nicht bewertbar, wenn
+                  sein Messwert UEBER der Schwelle liegt und die
+                  Kantenstuetzung fehlt. Ein zu stark verkleinertes Bild
+                  drueckt ALLE Werte unter ihre Schwellen - dann steht
+                  ueberall PASS und die Wache schweigt. Sie war blind in
+                  genau dem Fall, fuer den sie gebaut wurde.
+                  Die Ursacheninformation lag vor: captureProfile traegt
+                  scaleFactor und Aufnahmeweg. Sie erreichte die Bewertung
+                  nur nie - assessment.js kannte das Aufnahmeprofil gar
+                  nicht (null Treffer im Quelltext).
+                  BEHOBEN: buildCheckpoints nimmt das Aufnahmeprofil. Wurde
+                  das Bild verkleinert, ist ein Trocken-PASS nicht
+                  bewertbar statt bestanden, Code
+                  NOT_ASSESSABLE_RESOLUTION_NOT_ESTABLISHED, mit dem
+                  Verkleinerungsfaktor im Klartext und in den Messwerten.
+                  KEIN neuer Schwellenwert: "wurde verkleinert, ja oder
+                  nein" ist eine Tatsache aus dem Profil, keine kalibrierte
+                  Zahl. Die Regel entfaellt, sobald eine Mindestaufloesung
+                  gemessen und festgelegt ist.
+                  ENG GEFASST: ein Feuchtigkeits-FAIL ueber Glanzpunkte
+                  haengt NICHT an Mikrokanten und bleibt unveraendert ein
+                  FAIL (A26). Ohne Verkleinerung bleibt ein PASS ein PASS
+                  (A27) - sonst waere die Regel keine Wache, sondern eine
+                  pauschale Abschaltung.
+                  A28 haelt die Wache VERDRAHTET: der echte Aufnahmeweg
+                  muss das Profil uebergeben, und es muss vor dem Aufruf
+                  gebildet sein. Lehre aus rc.4.19, wo das Screening
+                  gerechnet und nie benutzt wurde.
+                  SPUERBARE FOLGE: Trockenheit steht bei fast jeder
+                  Handyaufnahme auf "nicht bewertbar", weil der
+                  Aufnahmeweg fest auf 640 Pixel lange Kante verkleinert.
+                  Das ist unbequem und richtig - und der Grund, die 640 als
+                  naechstes zu untersuchen. Sie einfach hochzusetzen genuegt
+                  nicht: das Bildbudget von 1 MB wird ueber die
+                  JPEG-Qualitaet gehalten, und JPEG-Artefakte zerstoeren
+                  dieselben Mikrokanten. Das ist eine Messfrage.
+                  ANLEITUNG: werkbank/ANLEITUNG.md ist neu - trainieren,
+                  anwenden, Schwellen nachjustieren, Grenzen. Sie war ein
+                  ausdruecklich verlangter Liefergegenstand und fehlte
+                  bisher vollstaendig; weder README noch die
+                  Abnahmedokumente erwaehnten die Werkzeuge. Jeder Befehl
+                  darin wurde vor der Auslieferung ausgefuehrt.
+Nacharbeit rc.4.25 Messung zur Analyse-Aufloesung. Sie hat eine eigene
+                  Annahme WIDERLEGT und dabei einen anderen Befund
+                  geliefert als erwartet.
+                  ZWEI STELLEN, die nichts miteinander zu tun haben:
+                  compressPhoto() legt mit bis zu 1600 px langer Kante bei
+                  Qualitaet 0.86 ab - das 1-MB-Budget betrifft NUR die
+                  Ablage. analyzeImage() rechnet das gespeicherte Foto
+                  DANACH auf 640 px herunter, allein fuer die Analyse.
+                  Die frueher geaeusserte Vermutung, ein Hochsetzen der
+                  640 erzwinge schlechtere JPEG-Qualitaet, war falsch: die
+                  Ablage ist zu diesem Zeitpunkt bereits entschieden. Der
+                  einzige Preis ist Rechenzeit.
+                  WIDERLEGT: die Vermutung, das Verkleinern lasse die
+                  Naesseregel versagen. Gemessen an beiden nassen
+                  Realaufnahmen, verkleinert bis auf 120x160: beide bleiben
+                  durchgehend VISIBLE_MOISTURE_TEXTURE. edgeFrac 0.198 bis
+                  0.185 und 0.138 bis 0.155 - die Tore 0.08 und 0.055
+                  werden nie unterschritten. Aufloesung ist NICHT der
+                  Mechanismus, an dem die Naesseerkennung scheitert.
+                  Der Fehlbefund des Auftraggebers hat damit eine andere,
+                  bisher unbekannte Ursache. Sein tvFlat lag bei 0.0026,
+                  waehrend die drei Referenzaufnahmen bei 0.0130, 0.0455
+                  und 0.0487 liegen - also um ein Vielfaches darueber, nass
+                  wie trocken. Was seine Aufnahme so texturarm macht, ist
+                  offen. Zu klaeren ist es nur an dieser Aufnahme selbst.
+                  Die Wache aus rc.4.24 greift bei seinem Fall trotzdem,
+                  weil sein Bild verkleinert wurde - das Ergebnis stimmt,
+                  die dort gegebene Begruendung war unvollstaendig.
+                  BESTAETIGT fuer das KRATZER-Screening: am synthetischen
+                  Pruefbild in Telefongroesse (900x1600, bekannte
+                  Kratzerbreiten 1/2/3/5 px) ueberlebt bei 640 nur EINER
+                  von zehn auffaelligsten Kandidaten; bei voller Aufloesung
+                  alle zehn. edgeFrac steigt von 0.0086 auf 0.0133 (+55 %),
+                  gradMean von 0.0226 auf 0.0284 (+26 %).
+                  KOSTEN: die volle Aufloesung braucht etwa das Doppelte
+                  der Rechenzeit, nicht das Sechsfache der Pixelzahl. Die
+                  absoluten Millisekunden stammen von einem Server und sind
+                  NICHT auf ein Telefon uebertragbar; nur das Verhaeltnis.
+                  WEITERER BEFUND: die Kandidatenzahl verhaelt sich ueber
+                  die Stufen nicht monoton (48, 301, 797, 58, 321). Dieselbe
+                  Unstetigkeit zeigte schon der Aufloesungsvergleich an den
+                  Realaufnahmen. Das Screening ist gegenueber Skalierung
+                  nicht stabil - eigener offener Punkt.
+                  WERKZEUGE: werkbank/analyseaufloesung.mjs (neu),
+                  werkbank/bildhilfen.mjs (neu, gemeinsame Bildbausteine
+                  statt zweier Kopien). jpeg-js als ENTWICKLUNGS-
+                  Abhaengigkeit: die Analyse bekommt nie ein PNG zu sehen,
+                  sondern ein dekodiertes JPEG - ohne diese Stufe misst man
+                  eine Kette, die es nicht gibt. Die ausgelieferte App
+                  bleibt unberuehrt.
+                  GRENZE: jpeg-js ist nicht bit-gleich mit dem Encoder
+                  eines Browsers; der Verlauf ist uebertragbar, die
+                  absoluten Bytezahlen koennen abweichen. Das synthetische
+                  Pruefbild erreicht die Naesseregel bei KEINER Aufloesung -
+                  es taugt fuer Kratzer, nicht als Naessebeleg.
+                  NICHTS GEAENDERT an Schwellen, an der 640 oder am
+                  Aufnahmeweg. Die Messung ist eine Messung.
+Nacharbeit rc.4.26 Auftrag des Auftraggebers, sechs Punkte. Umgesetzt
+                  sind die Punkte 1, 2 und 4; 3, 5 und 6 folgen.
+                  P2 KEIN AUTOMATISCHES TROCKEN-PASS ohne standardisierte
+                     Feuchte-Aufnahmesequenz. Wortlaut woertlich
+                     vorgegeben und als Konstante festgeschrieben:
+                     "Kein algorithmischer Feuchtehinweis erkannt.
+                     Trockenheit mit dieser Aufnahme nicht zuverlaessig
+                     beurteilbar." A29 prueft ihn Zeichen fuer Zeichen.
+                     Status NOT_ASSESSABLE, damit applyManualSubstitute
+                     greift - der Feuchtepunkt bleibt manuell
+                     bestaetigbar (A30), die uebrigen Pruefpunkte bleiben
+                     bewertbar (A31). Ein Feuchte-FAIL bleibt unter allen
+                     Umstaenden ein FAIL (A33).
+                  P4 DIE WARNUNG HAENGT NICHT MEHR AN scaleFactor. Sie
+                     verschwindet nicht bei voller Aufloesung (A27, die
+                     Umkehrung des gleichnamigen Tests aus rc.4.24).
+                     captureProfile ist aus der Bewertung ENTFERNT; A28
+                     verbietet seine Rueckkehr, prueft dafuer aber den
+                     Quelltext OHNE Kommentare - der Text erklaert
+                     ausfuehrlich, warum es weg ist, und eine Rohsuche
+                     traefe genau diese Begruendung.
+                  P1 GETRENNTE AUFNAHMEPFADE je Kriterium, neue Datei
+                     src/capturePaths.js. Analyse-Kern (Feuchte,
+                     Rueckstand) bei 640, Kratzer-Screening mit der
+                     gespeicherten Aufloesung. Begruendet durch Messung:
+                     Kratzer 1 von 10 gegen 10 von 10; Feuchte gewinnt
+                     NICHTS, edgeFrac sank von 0.0423 auf 0.0254. Die
+                     hochaufgeloesten Pixel werden nach dem Screening
+                     verworfen und nicht mitgefuehrt - rund 20 MB je Foto
+                     bei bis zu zehn Fotos. SC-24 haelt die Trennung fest.
+                  WARUM DIE ALTE BEGRUENDUNG FIEL: rc.4.24 hing die Wache
+                  am Verkleinerungsfaktor. Die Messung in rc.4.25 hat das
+                  widerlegt, und zwei weitere nasse Realaufnahmen zeigten
+                  den wirklichen Befund - verstreute Tropfen auf glatter
+                  Flaeche sind mit den vorhandenen Merkmalen ueberhaupt
+                  nicht von trocken zu trennen:
+                     nasse Spuele 1      edgeFrac 0.0423  gradMean 0.0428
+                     nasse Spuele 2      edgeFrac 0.0361  gradMean 0.0424
+                     trockene Kontrolle  edgeFrac 0.0296  gradMean 0.0355
+                  Der Abstand nass/trocken ist kleiner als die Streuung
+                  innerhalb der nassen Klasse. KEINE Schwelle trennt das,
+                  und keine wurde abgesenkt.
+                  SPUERBARE FOLGE: solange der gefuehrte Aufnahmeablauf
+                  fehlt, ist die Feuchtigkeit bei JEDER Pruefung nicht
+                  bewertbar und muss manuell bestaetigt werden. Das ist
+                  der gewollte Zustand, keine Luecke.
+                  TESTHILFE: tests/feuchteSequenz.mjs. Sechs Suiten
+                  setzen eine ordentlich aufgenommene Pruefung voraus, um
+                  etwas anderes zu pruefen. Sie holen die gueltige Sequenz
+                  jetzt aus einer Quelle statt aus sechs Kopien - die
+                  waeren auseinandergelaufen. Das Tor selbst wird in A25
+                  bis A33 eigens geprueft, mit und ohne Sequenz.
+                  NOCH OFFEN aus demselben Auftrag: P3 gefuehrter
+                  Aufnahmeablauf (normal, Streiflicht links/rechts, alle
+                  Originalbilder und Lichtpositionen gespeichert),
+                  P5 Feuchte-Vergleichsdetektor als getrenntes assistives
+                  Modul, P6 Messkampagne unter drei Lichtpositionen. P6
+                  braucht Aufnahmen aus P3 und eine Laufzeitmessung auf
+                  dem iPhone - die kann nur am Geraet entstehen.
+Ausgangspaket     VisuClean_v8.3.0_RC3.zip
+                  SHA-256 d62c510d03b5909753c8708a91688816d2722f29af2f9f1354b8756004038208
+                  1 608 845 Byte. Die Arbeitskopie wurde NEU aus diesem ZIP
+                  erstellt (Planung Abschnitt 11, Schritt 0). Ein frueherer
+                  Vorgriff wurde ausdruecklich nicht als Ausgangsstand
+                  verwendet. RC2 blieb unveraendert:
+                  SHA-256 2476c993a4b233882e73d31633ca71a11817db1aa38e5ab67c418099f71bdda8
+Analyse-Kern      src/analysisCore.js ist byte-identisch zu RC3
+                  SHA-256 ddc0b9fe3109895f994892aa285396074fcd3b5f608633d9368997c51c0f5793
+                  Keine Kernschwelle wurde verschoben oder erfunden.
+Vier-Augen        Auslegung B, am 2026-09-08 vom Auftraggeber entschieden:
+                  approvedBy.role === "QA Manager"
+                  && approvedBy.username !== performedBy.username
+Paketdateien      129 (ohne MANIFEST.txt, node_modules und dist)
+
+Abnahme
+  npm ci          Lockfile-vollstaendige Neuinstallation
+  npm audit       wird beim frischen Paketlauf geprueft
+  npm run verify  QR/Icons/Manifest reproduzierbar, Lint, alle Tests, Build
+
+Testaufteilung
+  coretest.mjs        16/16  Analyse-Regeln und Determinismus
+  realimagetest.mjs     5/5  Reale Nass-/Trocken-Edelstahlfaelle
+  enginetest.mjs        5/5  Lokaler Kern und optionale Firmen-KI
+  kitest.mjs          30/30  Known-Issue-Leitplanken
+  v82test.mjs         43/43  Domaene, Audit, PWA und Paket
+  persisttest.mjs     18/18  AES, Append-only und Speichersperren
+  uitest.mjs          32/32  semantische UI-Struktur und Bildschirmfluss
+  a11ytest.mjs          8/8  axe-/Tastatur-Smokes
+  assessmenttest.mjs  34/34  Pruefpunktstatus, Gesamtergebnisregeln, Ersatzpruefung
+  scratchtest.mjs     15/15  Kratzerdokumentation, Vergleich, QA-Freigabe
+  aitest.mjs          15/15  optionale KI-Gegenpruefung ohne stilles Ueberschreiben
+  integrationtest.mjs 16/16  Pruefpunkte im Produktpfad und im gebauten Bundle
+  versiontest.mjs     13/13  Versions- und Manifestgleichstand,
+                             Lockfile-Wurzeleintrag, keine Testnebenwirkung
+  rc4gegenproben.mjs  33/33  RC3-Maengel nachweislich behoben
+  roitest.mjs           8/8  ROI-Bezugsrahmen und Fuell-Effekt
+  ausschlusstest.mjs   16/16 Ausschlusspruefungen X-01 bis X-15 und Z-01
+  speicherpfadtest.mjs 49/49 Speicherpfad Ende zu Ende, inkl. Nachfreigabe
+  screeningtest.mjs     27/27 Screening, Klassifikator, Messkette (SC-01..27)
+  mehrwinkeltest.mjs    19/19 Mehrwinkel-Fusion, Registrierung, Persistenz (MA-01..15)
+  sequenztest.mjs        14/14 P3 gefuehrter Aufnahmeablauf: Ablauf, Speicherung,
+                             Wiederholbarkeit (Q1..Q14)
+  tiefentest.mjs        30/30  Tiefengrenze < 1,0 um: Operator, Messvertrag,
+                             Unsicherheitsintervall, Kontrastabgrenzung (D1..D20)
+  screeninganzeigetest.mjs 35/35 Screening-Anzeige Ende zu Ende: Ansicht, Speichern,
+                             Neuladen, Bericht, JSON, Gesamtexport, PDF,
+                             Tiefengrenze in der Anzeige (T1..T20)
+  pdftest.mjs           22/22  PDF-INHALT UND -GEOMETRIE, nebenwirkungsfrei
+                             (save wird abgefangen; P17 misst den Satzspiegel)
+  schmutztest.mjs       32/32  Schmutzdarstellung Ende zu Ende und Wischvergleich:
+                             Anzeigeebenen, Datensatz, wiedergeoeffneter
+                             Bericht, Protokoll, Altformat-Wischtests, fuenf
+                             Pflichtfaelle des Wischtests (S1a..S6e)
+  pruefflaechetest.mjs  35/35  Prueffläche, Koordinatensysteme und Bedienwege:
+                             Vorschau, Zuschnitt vor der Berechnung,
+                             Bildschirmkoordinaten, Kandidatenbild, Ortsbezug der
+                             Known-Issue-Zonen, ausgeschlossene Stellen in der
+                             Bilanz (R1a..R8c) sowie die drei Aufrufer ueber den
+                             tatsaechlichen Erzeugungs- bzw. Bedienweg: echter
+                             Known-Issue-Dialog bis onSave, echter Datensatzbau,
+                             echte Aufnahmemaske mit Wechsel ueber die
+                             Miniaturleiste (R9a..R9e)
+  schadenstest.mjs      81/81  Schadensmeldung, Kandidatenerhalt und
+                             Markerbewertung: Marker auf erkannten Riefen und auf
+                             Screening-Kandidaten, Schadensverdacht ohne
+                             Detektortreffer und ohne Tiefe, Sperrwirkung im
+                             Lebenszyklus und an der Speichergrenze, vollstaendige
+                             Kandidatenliste an den echten 493 des Geraetelaufs,
+                             Bedienweg und Rundlauf durch die Persistenz
+                             (M1..M4, S1..S7, L1..L4, P1, K1..K5, U1..U5, R1/R2)
+  kameratest.mjs        19/19  Kamera-Bedienung mit kontrollierten Medien-APIs (jsdom)
+  kalibrierung.mjs      7/7  getrennt gezaehlt, siehe unten
+
+Nachweiskette RC3 -> RC4
+  RC3_ROTE_GEGENPROBEN.txt  26 Maengel am UNVERAENDERTEN RC3-Quellcode belegt
+  rc4gegenproben.mjs        33 Pruefungen, dass sie behoben sind
+  Ein Test, der nie rot war, gilt nicht als Nachweis einer Reparatur.
+
+Zaehlung
+  bestanden                670   Summe der 27 Suiten OHNE kalibrierung.mjs
+  kalibrierung.mjs           7   getrennt gezaehlt, NICHT in den 670 enthalten
+  Rohsumme aller 28 Skripte 677   670 + 7
+  Alle Zahlen dieses Abschnitts stammen aus pruefzahlen.json und werden bei
+  jedem npm test gegen einen echten Lauf geprueft. Sie werden nicht getippt.
+  fehlgeschlagen             0
+  bekannte Einschraenkung    1   KE1
+  offene Kalibrierung        5   KO1, KO2, KO3, ROI-Fuell-Effekt, SCALE_CALIBRATION
+  nicht ausgefuehrte
+  Pflichtpruefung            1   manuelle Browserpruefung mit Screenshots
+
+  Die offenen Kalibrierungsfaelle zaehlen ausdruecklich NICHT als Erfolg.
+  Die Naesse-ERKENNUNG auf unscharfen Aufnahmen ist auch in 8.3.0-rc.4 nicht
+  geloest. Geloest ist die REAKTION: der betroffene Pruefpunkt wechselt auf
+  "Nicht bewertbar", statt ein falsches PASS zu erzeugen. Exitcode 0 von
+  kalibrierung.mjs bedeutet "keine Regression", nicht "Anforderung erfuellt".
+
+  Die Aufloesungsabhaengigkeit ist gemessen und als offener Kalibrierungsfall
+  gefuehrt. RC4 setzt KEINE Mindestaufloesung.
+
+  WICHTIG, korrigiert in rc.4.7: Bis rc.4.5.mehrwinkel.2 stand hier, ein
+  nicht gemessenes Aufnahmeprofil erzeuge "weder PASS noch FAIL". Das war
+  falsch — evaluateCaptureProfile hatte im Anwendungspfad keine
+  Aufrufstelle, das Tor existierte nur in dieser Beschreibung. Ab rc.4.7
+  wird das Profil ERFASST und ANGEZEIGT (Status NOT_MEASURED, Quell- und
+  Analyseaufloesung, Verkleinerungsfaktor) und steht im Datensatz; es
+  SPERRT in der Testphase NICHT. Das ist eine Herkunftsangabe, keine
+  Genauigkeitsbehauptung. Ob bestimmte Profile vor einer produktiven
+  Freigabe sperren, ist eine offene Entscheidung.
+
+  Die Etikett-Massstabskalibrierung (SCALE_CALIBRATION) ist ebenfalls OPEN:
+  Nennmass 43 mm aus dem Druck-CSS, Druck nicht vermessen. Keine
+  Millimeterangabe in der Anzeige — auch nicht fuer das Prueffeld: es ist
+  als "3x erkannte Etikettenbreite" benannt, ein unkalibrierter Stellwert.
+  Die Mehrwinkel-Fusion ist zusaetzlich zur Einzelbildbewertung und
+  veraendert vor der Kalibrierung kein Qualitaetsurteil; ohne Detektor
+  (rc.4.6) bleibt scoreByPersistence auf NO_DETECTOR. Nicht ebene Zonen
+  (Rohre, Kessel, Konen) sind von der Fusion ausgenommen und werden als
+  Einzelbilder vollstaendig bewertet.
+
+Elektronische Signatur
+  Ab 8.3.0-rc.4.3 besteht die Signatur aus ZWEI Identifikationskomponenten
+  (Benutzerkennung und Passwort) nach 21 CFR Part 11 §11.200. Die
+  gezeichnete Unterschrift ist entfallen: sie war nie eine Kontrolle
+  ("Pfadlaenge >= 20 px" belegt nur eine Fingerbewegung) und ist mit
+  Handschuhen im Reinraum nicht reproduzierbar. Name, Zeitpunkt und
+  Bedeutung stehen weiterhin in Datensatz, Anzeige und PDF (§11.50).
+  Aeltere Datensaetze mit gezeichneter Unterschrift bleiben lesbar.
+
+Vier-Augen-Prinzip — organisatorische Voraussetzung
+  RC4 setzt Auslegung B technisch durch: approvedBy.role === "QA Manager"
+  und approvedBy.username !== performedBy.username. Diese Invariante ist eine
+  WORKFLOW-SPERRE, kein Zugriffsschutz. Die Demo-Benutzer stehen im Bundle;
+  wer sie liest, kann sich nacheinander als Pruefer und als Genehmiger
+  anmelden und die Invariante formal erfuellen. Die tatsaechliche Trennung
+  zweier Personen muss deshalb ORGANISATORISCH getragen werden (SOP), bis
+  eine serverseitige oder IdP-gestuetzte Identitaet vorliegt.
+
+  Ab 8.3.0-rc.4.1 ist das Demo-Panel auf dem Anmeldeschirm standardmaessig
+  ausgeblendet (VITE_DEMO_ACCESS=true blendet es ein). Das hebt die Huerde,
+  es schuetzt nicht.
+
+Was in RC4 NICHT enthalten ist
+  Die RoiPad-Oberflaeche der Preview-Linie ist nicht nach RC4 portiert.
+  Uebernommen ist ausschliesslich src/roi.js als Geometrie-Ebene fuer den
+  spaeteren bauteilbezogenen Bezugsrahmen. Der ROI-Zuschnitt beeinflusst in
+  RC4 kein Qualitaetsurteil (roitest.mjs R8), weil der Fuell-Effekt von
+  copyRoiImageData nicht gemessen ist.
+
+  Das Befundregister (Schaden- und Kratzerdokumentation ueber Pruefungen
+  hinweg) ist NICHT Teil von RC4. Es ist als eigenes Arbeitspaket geplant.
+
+Abgrenzung
+  Kein validiertes GMP-Produktivsystem. Native iOS/CoreML, zentrale Identitaet,
+  qualifizierte Synchronisation/Archivierung und formale OQ/PQ bleiben
+  Produkt-Zielarchitektur. Rollen-, Personen- und Signaturpruefungen sind
+  Workflow-Sperren im Browserprofil, kein manipulationsgeschuetzter
+  Zugriffsschutz. Details: README.md, V83_RC4_ACCEPTANCE.md, V83_RC3_ACCEPTANCE.md und
+  V82_ACCEPTANCE.md.
+
+SHA-256-Dateiliste
+------------------
+1ca41b65e8355ccde32f879fcabc86f9ded9d8a38f07aa3d1aa9b62f7c9961a4       247  .gitignore
+773504a8e22554700956ac868326cd06e3d6d52d3c23bcd5023eb71ed027f9cb       199  .replit
+b1a9489d400244ff6fb59c8d9cd320b0aae30f15cc8ceeb64bbeddf8d89728ba      5178  a11ytest.mjs
+241864a4f7a4bf2d2316d09332e7ba613fae3554d16da90b6a6f3a4ec6e9df20      8529  aitest.mjs
+77556fc129b8ec4ca6f41096e5c0654895739faedb1cc873fadf1041e7db0248     23868  assessmenttest.mjs
+875cd5bbf40f877570374ed3c522a42551358c85207d286b37428cc04a3ef788     14736  ausschlusstest.mjs
+b995853c0e7aea4efdfb0c117d6ce49c2d5b5e0f1e7a3f7a64bac20f75398d16     84193  CHANGELOG.md
+b951f998731c8bcc162abbb5454db27f33eb0fd50b3c11dd16cae9204c55fa7b      8991  CLAUDE.md
+f62efc660c6c6fa5f410db850b28c742a4394118986531b64e83607db79ed7e2     11159  coretest.mjs
+654e2eaf771926520b9628c7ad7eeaf8578d4b30707de01dce2278c070c1b16b      1922  enginetest.mjs
+e5fb475cd23c0c2bfdef848c5d102ddf2e376445cdc6cd9bd5ff557e5f86c0c6      2608  eslint.config.js
+d7e85ca6b7c94f93813f0bd76283529a77684ef1c0301647b247070d7447a388      1060  index.html
+ff6c2a8ad2d605ddf03062a6bec598d9dcb3f1ce67880a4b64018f90d66ddd3e     11643  integrationtest.mjs
+6ac25bfea7e1c249a5b76acd3b91e12265c3e04506c21a2f4c61b08fa64b2e04      7843  kalibrierung.mjs
+4d8a846931024b5e1bde33ad57ae0fd92d2c2869d9d1757ba294817f449fe349      8468  kameratest.mjs
+6bd56702819d75e4a7be3120f3719f2bc87814443183ca65feb25805fd277216      8987  kitest.mjs
+dcec461cad84df1354094753718cc486c25d84b041f6e27f1e38642ae2228836     32928  mehrwinkeltest.mjs
+30d0be25ba8407003ffc6f5db62f09c44126948a85a5f65d0fe8b07aea152f91    179824  package-lock.json
+e2c70e324a2185e0faa7e75fece8007c5777344644040dbc17c66a5bcbea09af      3779  package.json
+1db337a6babea9035859868e84f11fcbb9d7ae7647200589144c78431d929798     41927  pdftest.mjs
+871e8051dc9a11c8fe21892aaeb2d6661e24ae6c19cf8aa377b05af72e3e458e     11024  persisttest.mjs
+47dab5914c411b878a9f9b366bdefd05951aab69765c6f74db00da52eca70138     53981  pruefflaechetest.mjs
+20d5a084881581c20e48156e64fe5344dea28adc66c112a7cfd7286f69a79d98       904  pruefzahlen.json
+d3e2902c08f3c742410fd8d6134df851b84a1255ed2502fb7812c3a8e16a15a5      2262  public/icon-192.png
+985a4e3c6f19f611d435821a1dd730b5a095e9318a5a2b2425f8e76eeac687cb      6873  public/icon-512.png
+c73dc08d41c9ec37e733ccacd473a3cd1048705ee79df646a4844be7975bf1cf       502  public/icon.svg
+01ae4023a86df4d5b3a72e6202e726c90838f54a25328ed79f96bedb7e583f13       734  public/manifest.webmanifest
+eadb719d582309567383dc473f85d816e629bd6c74f864ed88359391198c9787       598  public/screening.config.json
+a14fd2bf22d4a8821ba8a52d763cd66324ea337ef254378ecab6fdd411288ea7      4770  public/sw.js
+f157a759b66dd8cd1e21e7b2407bf383689d65311ff6124c7ea1762bb3a97f7c     13242  public/VisuClean_QR_Etiketten_A4.html
+02c69c4c53b927c3bc7ec1a7aa726ccf2075236c63ef4ecd079bc49ef0981938      7930  RC3_ROTE_GEGENPROBEN.txt
+9f64a612275e43b6107f343dfab19f3c1f1dd53c69a104b6d9549182bea95c39     20986  rc4gegenproben.mjs
+e59efdb356622e8a9f61f05ed92cdc2ded17ab512ab295a1bf3d898cf7a189d9      9088  README.md
+b5f699b01e9514afdf5225fe4429277bcb31df3b832c4f7d0bd09ecbc446b549      1790  realimagetest.mjs
+e3ca5f8b74e9639c83730601ae609ccdb6f95dba89ec570d4909e98f991d191d      5137  roitest.mjs
+deb0f643d7f95567c2169f33410cadd80f233ee9968c10815b0a7062fcb3ea5e     87555  schadenstest.mjs
+f9982a130d70aa106785dd59f3cc6783a1138ba921aa869cfd67bac33a8eb370     45403  schmutztest.mjs
+6f3b2a2d40114b501cc4b44f7a5ba3078a49cdbe15e2379b07ef1b41b7a72585      8995  scratchtest.mjs
+5240db4f3374e97dfcdc34429613a8aaad8c194c4cd2845119f901765a92bf52     63178  screeninganzeigetest.mjs
+1eeeadd8e29bbf620113d166e3ee25c3c476d89d87e0ccef75a956d58db5d6bb     35677  screeningtest.mjs
+daefcd752f80370dfc2c395cc09cbd10d06429fba9a894c0859f4592456ca96b      1893  scripts/generate-icons.mjs
+1e52007bb64de357c5484fc2d7a9fd910282568cfe7690d33da1418e4e1d6de7      3287  scripts/generate-labels.mjs
+488eb8c4253ef7129b713ad058f622170b70ebe5a4548d283ca3d6cb76f89066     51914  scripts/generate-manifest.mjs
+7d390bd89d08801af71a21e3dedeb7cfaf16a1d51f016f6f7d2093f7677ad1cd     10287  scripts/pack-rc4.mjs
+cac4e4e8942778b290bed548d6349f237ebc26e5c534a58cf29e65a2f4e6ab37      6925  scripts/pruefzahlen.mjs
+51d4b58d13e28895a65ef995851272079999d1e1e489bcc2888d7d07fef37ae1     20323  sequenztest.mjs
+e7882bab61e76e5b895bf026880d95205ea7737d8eb2018d28f0fa0d7f352194     50217  speicherpfadtest.mjs
+1169d86b4c34fda367cfe97dedc51bf7af7ee43cf0959792dd734b98a56a7d94      8517  src/aiContract.js
+ddc0b9fe3109895f994892aa285396074fcd3b5f608633d9368997c51c0f5793     16473  src/analysisCore.js
+b64949e4d3bfdd8bbf13e17c430b0300d65067cd86e92bade2dca97aa01e7e3d      7986  src/analysisEngines.js
+5282d90cf3885bd8d9a9f47aafd38b6b7e85d24af9991ca17ed145f83e5bdbea    216543  src/App.jsx
+5beeaaf04fd7f7adc01e8cd3707dc4ef823830a0c1142d84d7024eb23363a18b     32826  src/assessment.js
+494d6af364da4c2e5a85c57185a5e57b7d92ff49ab7bbf256f09928e5f602c8a      5837  src/audit.js
+6febab3e1234a66b2223155a0e4df25e3f420fd11bf18fb35cc781ea6a11b121      8544  src/aufnahmeSequenz.js
+c67afde336fcae8a0571e69634fcb517cd31ec8a2c1041e4031c2108bf3edf09      5050  src/cameraCapture.js
+e9c7debe36f0c442a0496a91ead1ecfa67df9488883fff21765f2b29b099a639      5955  src/capturePaths.js
+df3bd122a056d7490be3a165fd8a46122e0df18ef87ed768d22ae226b4e6fe7e     27398  src/decision.js
+fc2b187a459c6cdd2d100d2e1ff4f4c246607e44f58cb5742f1877e4e9c0b3c3     26650  src/depthLimit.js
+4a8c563dd7fb7ea1230e8e6b126d4eb390f759adf7751d651e0667cbf2f66fa5     15267  src/domain.js
+ebb585fdd7323fd1710f52fe0aca9640fbb028ea52186fd14f3adafa87c1fac1     42768  src/i18n.js
+b7cc8a48c697c84f4c6ebaa9f41d5c7bbd027521fcfecab2d65e4a6bfd9eef03     15551  src/inspectionArea.js
+7d78df320e59392d479a20555c1508992e170c58bb19b6d17c32d6fb75f9549e     31572  src/inspectionRecord.js
+045f4f644b47e36fec79231e844ab4478090870b3de5d647b097d2c300a9dd8b      8495  src/knownIssues.js
+a8358212f8d88e036a46b887b9cc10762e648cd8727364e480d25267bee03d53     26358  src/lifecycle.js
+64a34e64be5781933d3f479151352578562635d09d18f993072def3dea7b8719       522  src/main.jsx
+3334a11ea8b8c5a689bc11aef7ae5469cb1ee18419550a665ddbbec82d895a4b     10704  src/multiAngle.js
+26a9e137e6ac5b6b1f86e51c767ab1d1bb7127e2979c5d6924f1d9fceaddb5d8     10342  src/overlayLayers.js
+db59f41aa7b8b9b55a7169f5d2ea036c062726c0a2ad0f6d1a18493772ed6094     38400  src/pdfExport.js
+68e5aa7e2127459791cad05e02ce3296e1654f90ff6eab7e4ef9ba39522c7fdb     50215  src/persistence.js
+48124114e853a3ab96c4d8d26103feb0c584019f6e7d3d92043377988bdecf35      6391  src/references.js
+6227197293233e998030ce877205bd57f09b6e854a7ecfb8a9d24c7c5184ccbc     16940  src/registration.js
+3639b75faf86d9a9f3eeb39f5841cedc0766c4b675cb52b566ec3c9d782d85cd     26697  src/roi.js
+8e52a27d786a5907c77d89016b5a4031033c6fb27eda48e86917bd90af4a8574      8496  src/scratchClassifier.js
+110ba17ecfdf04cad0218a2e5564dbdd5fe8aa2dfd2d9d86ab3d236367e02597     10810  src/scratchComparison.js
+5a8ef163072885d6ef8594b985de2863078aa72bbc3f0300cf85fd9c5ead7bac     26208  src/scratchScreening.js
+8065495d49ca6d984f0d662759b18d52920f65558518f77642ebe7b091fcb3ee      6708  src/screeningConfig.js
+d4749ee174c9529dbb773bc34f827e097310b476ff53ea0cd94d6cfc05cd65ae      1539  src/selfTest.js
+063702d14bdac853fe5213bff13dc2519654f2cf63f85f7925c6cd33d2f0f35f     36180  src/styles.css
+a0eac04e2f1906c712564d953797b0e8098ac06b126dcd1a0bfcbcce8f81e99d     16797  src/swabComparison.js
+427fa15d5c9ad8acf54c95a29551edce41321e47ce62b3956cb97c16f7a1dfc2      4703  src/textureFeatures.js
+d4fbf5478f8c6cd151c4bab039f4d8223760117e4f8d62b5b635188f9d9cf192      5725  src/verdictWording.js
+52e0a6995c9707dd09f7bce8f3f867605daadeafcaee551851aa0ec7c207ed11      1987  tests/feuchteSequenz.mjs
+560a23bbeb7547f51b327001198e0d92cf41ddbc85db933fba35cf2ff92d52b1    377540  tests/fixtures/real/dry-stainless-control.png
+01367adfd64af95e21d593e9ec2d11ba89c82cc4e3b79dd8934b225c0d0f0277    537201  tests/fixtures/real/wet-stainless-close.png
+127becc0f523fd580afb4bedf336c2f6de87542d9d56c43df28a200498ff36da    499253  tests/fixtures/real/wet-stainless-wide.png
+37bffbbe78ea2565398a8b19fa4f5852e5dd93bfeccd7f7486b747c945bb6a27    279034  tests/kandidaten-geraetelauf.json
+036928f728397b0523eb8aba3362cf1b11b57beeb29d74f19c36f65bbf0b2523     18276  tiefentest.mjs
+81d75d28b788d4674927e807de9aa054e97e8ba68beee2cb6e9460faa5280dcc     37383  uitest.mjs
+9177c538a9e43282f31542ebec56806a384b47e68e813467f500a48496aa4fd1      7513  V82_ACCEPTANCE.md
+ee532b2f9dbda488c6e6d0ce5fc3ede6e952e33199ac1bbb6d24e2abe48de6ee     19087  v82test.mjs
+be6ccb6d35cea15871e344cef134ffa0bd92aff15f89a3c4d7cd350bbf6fd686     10517  V83_G_KENNZEICHNUNG.md
+04757e804084944e878df40b37c27487433a80012650ccaa01eb69d49d531f8c      6894  V83_LIEFERUNG_RC445.md
+5a6fc972887e58a7a9234454d4bcd348d4ef38d466207c65e5b82c9870e2cbdc     20273  V83_MESSKAMPAGNE.md
+bf6bf9a53a42e17484098d0f1df528cce05b872e7c71db17728707188f69e98a      5342  V83_RC3_ACCEPTANCE.md
+e1d3c4e1c08d54c4950c56dcf5f9e56b346062d928faa83918750c183a6f927c     33762  V83_RC4_ACCEPTANCE.md
+ca105c9590a1f13f12f0dd4c5d4d79340a16bb8febe6ec83bde0f01d9d0421cd      8340  V83_SCHMUTZKAMPAGNE.md
+1f94619c16328a6faccc822469b4c4c6b1dcc29845e03b173f055ee07954b653       211  vercel.json
+5018b472ea06341ac98b56842dfe6c1ee3da108fd57d1fa4df9f0512023b7819     11140  versiontest.mjs
+7c419e5c7f87474ded20194abb250d3184740289548f6bea9bb495de928b50e4       751  vite.config.js
+ca9952eeb74cef7f19d19dcdb80794789cd8acad8760b44ab6aceb2866313708     13544  werkbank/analyseaufloesung.mjs
+13a584d98fc9f844c4e9de4cbb85ca8cbfe36bffe3718078231ad72cb80782a6      9582  werkbank/ANLEITUNG.md
+a893f4b09d4816faabf84ae87310284882bc41c5808c6bae18cf01053c9d13e6      6887  werkbank/aufloesungsvergleich.mjs
+01e44835e9b707f46645570563785b0b94cbd309a8a9d0c9a012aaf2fa6fd1fb     40755  werkbank/bedienlauf.mjs
+c1d0385edb1115a222736b2e8f1b52d727e96fc36d1310d96f0aa2b0cb92500d        77  werkbank/beispieldaten/dummy_entwicklung.csv
+e5c027c2ce51436ed06fa1f259984091b7aebad25380e0fb98dea9043d96a10e       447  werkbank/beispieldaten/dummy_grenzfaelle.csv
+cceb32df5d9ee5fd04c466856bb476309263dc4cb1fa6f5f469e4b3ee2380c27       307  werkbank/beispieldaten/dummy_kandidaten_gesamtweg.csv
+c0510fcd46e94769bdd02a09d3f33a77e0fa7771c2019509c508d6fedf00abfb      9645  werkbank/beispieldaten/dummy_kandidaten.csv
+3307ac1f740c41746bcb2ef4ec6a1383d910a612e1bb8accdbe1bda2c174ee0f       111  werkbank/beispieldaten/dummy_nur_kontrast.csv
+c325f8aec949fbed75333a01656115fe406f4d33c87ff3396041c52e8645b04a       441  werkbank/beispieldaten/dummy_referenz.csv
+860ea3e4bfd5b09fcf2925360be92f283fb682e886f995953de7780082e05fa2        76  werkbank/beispieldaten/dummy_test.csv
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855         0  werkbank/beispieldaten/fehler_leer.csv
+2516a0d87872b94b18e500ecccb5c8193fd2aee830ef4e2fea6096a995a6e721        31  werkbank/beispieldaten/fehler_ohne_kontrast.csv
+0c2376facbedee1acb1e7c95020c29861def3be08aa9d28b821a4b6a560f3e22        22  werkbank/beispieldaten/fehler_spalte_fehlt.csv
+39c7c6b714fe80ba14902066d732a0b60cb4f7ffe75b4da8b0e6836b4cc7097b        82  werkbank/beispieldaten/fehler_werte.csv
+e85b20fb4c92171e8b77d4a31287ab7899068283d5f6181761ba13d0888fe213      3622  werkbank/bildhilfen.mjs
+c1516e8b0f0fcfa22555e9090701c7e9a4ad0586850526b0b436d60dd34a3412      5903  werkbank/breitenmessung.mjs
+31f3fd5c61ede00fc9483a8c48d0973508916fa967ef1d4f0779aaddb8eb0021     10065  werkbank/fragmentvergleich.mjs
+65525e7155689833f15e477061b55bdd1696b2d5f0d85546702c48963a3851e0     20533  werkbank/kameralauf.mjs
+5a6830a0f97b164a574430823db948bd19cd914bed19ed38c0ce4bd8005bdcf0     12075  werkbank/kandidatenspur.mjs
+8f72d1bf1167f0f6c83b5dfd1727524dabedc568b604074ecc3675025984465e     15223  werkbank/kennzeichnung.mjs
+a352878cae5d7da0510a4ace9c43bff2123e77e159df000151a8484f67d92b58     19761  werkbank/KONTRAST_RIEFENTIEFE.md
+81ed492a84635648bdd017e4f3b34db7fe3b0ba40b73e144aacbb5e05d9c2549     33358  werkbank/kontrastauswertung.py
+62b2b1dc84d789b205d5a10f1fa3eb07bff9f994fce57ab8a55435fd8fefe991     19637  werkbank/kontrastmessung.mjs
+2bbf7cfb3ef69386f21495d8fe6fd403b4f1a1ece641f054beb5a6219135e6ef     10918  werkbank/messreihe.mjs
+28145ca86cc05acc45eb3718b91faa8e7e9ca83d32cb691e11cf77ee763703a9      9236  werkbank/rahmenmessung.mjs
+8bc0ade305f8460aa7c286d39c6fb0c15d55bfa20f0066089e890d587f6bd471     15876  werkbank/riefenmerkmale.mjs
+8a8df56a0ef91551a0af55828e3268345f05550786c159e39c680dc2c8df3a22     10975  werkbank/schmutzaufloesung.mjs
+6ad0b9b08c31617db191de2b1013d4638f2f5fe4068a12cc43d0f4e04324464b     26940  werkbank/test_kontrastauswertung.py
+d8d2d53cf2206dfc030a2baad3c03db8685fcc404dd2931b6fc627b4a8455e9b     10447  werkbank/train_rf.py

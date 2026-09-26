@@ -1,0 +1,9 @@
+run = "npm install && npm run dev"
+entrypoint = "src/App.jsx"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+build = ["sh", "-c", "npm install && npm run build"]
+run = ["sh", "-c", "npm run preview"]

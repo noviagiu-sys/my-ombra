@@ -1,0 +1,8 @@
+id,teil_id,bild_id,befund_id,befundart,kontrast,kontrast_skala,tiefe_um,tiefe_methode,tiefe_unsicherheit_um
+G1,T-9,B-1,F1,RIEFE,25.0,roh,2.00,TASTSCHNITT,0.10
+G2,T-9,B-1,F2,RIEFE,8.0,roh,0.40,TASTSCHNITT,0.05
+G3,T-9,B-1,F3,RIEFE,20.0,roh,1.00,TASTSCHNITT,0.10
+G4,T-9,B-1,F4,RIEFE,9.0,roh,1.20,TASTSCHNITT,0.30
+G5,T-9,B-1,F5,RIEFE,30.0,roh,3.00,,0.10
+G6,T-9,B-1,F6,RIEFE,30.0,roh,3.00,TASTSCHNITT,
+G7,T-9,B-1,F7,RIEFE,5.0,roh,2.50,TASTSCHNITT,0.10
