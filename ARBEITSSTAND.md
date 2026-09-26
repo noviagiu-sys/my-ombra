@@ -13,8 +13,8 @@ ist die Arbeitskopie eines älteren Stands — **dort nicht weiterentwickeln.**
 | Code, ausgeliefert | `Desktopvisuclean-standalone`, Branch `claude/session-1ocbg3`, Commit `a8dcf67` |
 | Version | `8.3.0-rc.4.45-camera.3`, **an der Nutzer-URL ausgeliefert** |
 | Code, neu | Branch `claude/reflex-getrennt`, Commits `6ee0e7a` + `893fedd` auf `a8dcf67` — Reflexreparatur **ohne** Tropfen, mit Belag-Korrektur. Nicht zusammengeführt, nicht ausgeliefert |
-| **Release-Kandidat** | Branch `claude/release-rc4.46`, `b17e155`, Version `8.3.0-rc.4.46` — **vorbereitet, nicht ausgeliefert**. Auslieferung = Fast-Forward `claude/session-1ocbg3` → `b17e155`, nur auf Freigabe |
-| Kette | `a8dcf67` → `6ee0e7a` (Reflex ohne Tropfen) → `893fedd` (Belag-Korrektur) → `bd58621` (Werkbank Kratzer) → `3b4e229` (Kratzer: kein PASS ohne Suche) → `b17e155` (Release) |
+| **Release-Kandidat** | Branch `claude/release-rc4.46`, `e38c650`, Version `8.3.0-rc.4.46` — **vorbereitet, nicht ausgeliefert**. Auslieferung = Fast-Forward `claude/session-1ocbg3` → `e38c650`, nur auf Freigabe |
+| Kette | `a8dcf67` → `6ee0e7a` (Reflex ohne Tropfen) → `893fedd` (Belag-Korrektur) → `bd58621` (Werkbank Kratzer) → `3b4e229` (Kratzer: kein PASS ohne Suche) → `b17e155` (Release) → `e38c650` (Anzeige nach Gerätetest 26.09.) |
 | Code, verworfen | Branch `claude/erkennung-licht-tropfen`, `339850c` — **nicht ausliefern** (Tropfenteil widerlegt) |
 | Doku, dieses Repo | `my-ombra`, Branch `claude/visuclean-fortsetzung-uaf0xf` |
 
@@ -301,9 +301,23 @@ Exit 0 (31 Suiten, 747 + 7), Manifest 141 Dateien reproduzierbar,
 `test:bedienlauf` 31/31, `test:kameralauf` 13/13. Nicht geprüft: iPhone,
 Auslieferung an der URL.
 
+## Gerätetest 26.09. am Release-Kandidaten → `e38c650`
+
+Drei Fotos eines Edelstahlteils (brauner Ring, Lichtstreifen, glänzende
+Erhebungen): Sauber FAIL (Ring markiert), Trocken NB überbelichtet, Kratzer
+NB (Kantenanteil 6,9 % > 6 %), Gesamt gesperrt. Drei Anzeigefehler auf
+Auftrag korrigiert: Zähler getrennt (bestanden / nicht bestanden / nicht
+bewertbar), Kratzerbegründung nennt nur die überschrittene Schwelle (kein
+„Schliff"), Lichthinweis nennt Anteile mit/ohne Farbkorrektur und keinen
+scheinbaren Urteilswechsel bei bestehendem FAIL. KS10–KS12, RL28 vorher
+rot; 31 Sabotagen erkannt; `verify` Exit 0 (31 Suiten, 751 + 7),
+Bedienlauf 31/31, Kameralauf 13/13. Offen aus dem Test: ob die 94 warmen
+Zonen nur der Ring sind (Originalfotos nötig); Screening-Kandidaten liegen
+auf Glanzsicheln und Prägung, nicht erkennbar auf Kratzern.
+
 ## Nächster konkreter Schritt
 
-1. **Freigabe der Auslieferung** von `b17e155` an die bestehende URL
+1. **Freigabe der Auslieferung** von `e38c650` an die bestehende URL
    (Fast-Forward `claude/session-1ocbg3`). Danach Gerätetest: Glanz auf
    sauberem Teil, Belag, geschliffene Fläche (Kratzer „nicht bewertbar").
 2. **Kratzerdetektor an echten Teilen** (`werkbank/rillendetektor.mjs`),
